@@ -1,3 +1,12 @@
+---
+title: CareerSight
+emoji: "\U0001F393"
+colorFrom: indigo
+colorTo: orange
+sdk: docker
+app_port: 7860
+---
+
 # CareerSight
 
 **AI · Education Loan Risk Intelligence**
