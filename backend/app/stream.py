@@ -87,7 +87,10 @@ async def stream_pdf(pdf_bytes: bytes, *, filename: str | None = None) -> AsyncI
     yield _sse("stage", {"name": "parse", "label": "Reading resume content..."})
     await asyncio.sleep(PACE_FAST)
     try:
-        profile, parser_used = parse_resume_pdf(pdf_bytes)
+        loop = asyncio.get_event_loop()
+        profile, parser_used = await loop.run_in_executor(
+            None, parse_resume_pdf, pdf_bytes
+        )
     except Exception as exc:
         yield _sse("error", {"stage": "parse",
                              "message": f"Parser failed ({type(exc).__name__}); falling back to defaults."})
@@ -234,7 +237,10 @@ async def stream_text(text: str) -> AsyncIterator[str]:
 
     yield _sse("stage", {"name": "parse", "label": "Reading resume content..."})
     await asyncio.sleep(PACE_FAST)
-    profile, parser_used = parse_resume_text(text)
+    loop = asyncio.get_event_loop()
+    profile, parser_used = await loop.run_in_executor(
+        None, parse_resume_text, text
+    )
     fc = profile.field_confidence or {}
     for field, label in [("name", "Name"), ("course_type", "Course"),
                          ("institute_name", "Institute"), ("cgpa", "CGPA")]:

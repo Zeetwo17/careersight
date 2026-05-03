@@ -398,11 +398,13 @@ LLM_STATUS = {
 }
 
 
-# OpenRouter free model. As of 2026-04 the most reliable free models for
-# strict-JSON extraction are openai/gpt-oss-120b:free and gpt-oss-20b:free
-# (Llama 3.3 70B is heavily rate-limited upstream). Override via
-# OPENROUTER_MODEL env var in .env.
-DEFAULT_OPENROUTER_MODEL = "openai/gpt-oss-120b:free"
+# OpenRouter free model.  gpt-oss-120b is accurate but SLOW on free-tier
+# queues (30-120 s).  meta-llama/llama-4-scout:free is lighter and usually
+# responds in <10 s.  Override via OPENROUTER_MODEL env var.
+DEFAULT_OPENROUTER_MODEL = "meta-llama/llama-4-scout:free"
+# Hard timeout for the LLM call (seconds).  If exceeded we fall through
+# to the heuristic parser instantly.
+_LLM_TIMEOUT_S = int(os.environ.get("LLM_TIMEOUT", "15"))
 DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
 
 
@@ -532,6 +534,7 @@ def _openrouter_parse(text: str) -> Optional[StudentProfile]:
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
+            timeout=_LLM_TIMEOUT_S,
             default_headers={
                 # OpenRouter recommends these headers for free-tier identification.
                 "HTTP-Referer": "https://github.com/team-aurdinary/careersight",

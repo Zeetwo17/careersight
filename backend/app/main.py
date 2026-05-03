@@ -241,6 +241,7 @@ def _probe_openrouter() -> dict:
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
+        timeout=15,
         default_headers={
             "HTTP-Referer": "https://github.com/team-aurdinary/careersight",
             "X-Title": "CareerSight",
@@ -296,7 +297,7 @@ def llm_health(probe: bool = False) -> dict:
     fires a tiny 4-token call to verify quota.
     """
     import os
-    from .resume_parser import LLM_STATUS, _classify_error
+    from .resume_parser import LLM_STATUS, _classify_error, DEFAULT_OPENROUTER_MODEL
 
     has_openrouter = bool(os.environ.get("OPENROUTER_API_KEY"))
     has_gemini = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
@@ -331,7 +332,7 @@ def llm_health(probe: bool = False) -> dict:
     provider = _raw_prov if _raw_prov not in ("none", None, "") \
                else ("openrouter" if has_openrouter else "gemini")
     model = LLM_STATUS.get("model") or \
-            ("openai/gpt-oss-120b:free" if provider == "openrouter" else "gemini-2.0-flash")
+            (DEFAULT_OPENROUTER_MODEL if provider == "openrouter" else "gemini-2.0-flash")
     status = LLM_STATUS["last_call_status"]
     ok = status == "ok"
     pretty_provider = "OpenRouter" if provider == "openrouter" else "Gemini"
