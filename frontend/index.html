@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerSight - AI Education Loan Risk Intelligence</title>
+  <link rel="stylesheet" href="/static/style.css?v=24" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ==================== NAV ==================== -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span class="brand-name">CareerSight</span>
+        <span class="brand-tag">AI · Education Loan Risk Intelligence</span>
+      </div>
+      <ul class="nav-tabs" role="tablist">
+        <li class="nav-tab active" data-tab="demo">Live Demo</li>
+        <li class="nav-tab" data-tab="portfolio">Lender Portfolio</li>
+        <li class="nav-tab" data-tab="pri">PRI Index</li>
+        <li class="nav-tab" data-tab="arch">Architecture</li>
+      </ul>
+      <div class="nav-meta">
+        <span id="llm-status" class="status-pill llm-pill" title="Click to ping Gemini (consumes one free-tier call)"><span class="dot"></span><span>LLM…</span></span>
+        <span id="nav-status" class="status-pill"><span class="dot"></span><span>Connecting…</span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO ==================== -->
+  <header class="hero">
+    <div class="hero-inner">
+
+      <!-- Top row: title + stats side by side -->
+      <div class="hero-top">
+        <div class="hero-left">
+          <h1 class="hero-title">CareerSight</h1>
+          <p class="hero-sub">Linking education loans to career outcomes — placement timelines, salary ranges &amp; delayed-repayment risk so lenders can intervene 90 days early.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num accent">7.8%</span><span class="stat-label">Education NPA Rate</span></div>
+          <div class="stat"><span class="stat-num accent">40%</span><span class="stat-label">Graduates Delayed 6+ mo</span></div>
+          <div class="stat"><span class="stat-num accent">₹4.5L Cr</span><span class="stat-label">India Edu. Loan Book</span></div>
+          <div class="stat"><span class="stat-num accent">35%</span><span class="stat-label">Defaults Predictable 90d Early</span></div>
+        </div>
+      </div>
+
+      <!-- Bottom row: pills + citations + scroll CTA -->
+      <div class="hero-bottom">
+        <div class="hero-bottom-left">
+          <div class="hero-pills">
+            <span class="pill">3 / 6 / 12-Month Forecasts</span>
+            <span class="pill">Salary Prediction</span>
+            <span class="pill">Delayed-Repayment Risk</span>
+            <span class="pill">Explainable AI</span>
+            <span class="pill pill-accent">Early Lender Alerts</span>
+          </div>
+          <div class="cite-strip" aria-label="Citation badges">
+            <a class="cite-badge" target="_blank" rel="noopener"
+               href="https://ijemcs.com/index.php/ijemcs/article/view/45"
+               title="Kumar et al. 2023 — campus placement AUC benchmarks">AUC 0.85–0.95</a>
+            <a class="cite-badge" target="_blank" rel="noopener"
+               href="https://www.rbi.org.in/Scripts/AnnualReportPublications.aspx?Id=1416"
+               title="RBI Financial Stability Report Jun-2024">RBI FSR 2024</a>
+            <a class="cite-badge" target="_blank" rel="noopener"
+               href="https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf"
+               title="Digital Personal Data Protection Act 2023, §10 obligations">DPDP §10</a>
+            <a class="cite-badge" target="_blank" rel="noopener"
+               href="https://arxiv.org/abs/2101.02703"
+               title="Bates, Angelopoulos et al. 2024 (JACM) — Distribution-Free Risk-Controlling Prediction Sets">MAPIE LTT 2024</a>
+            <a class="cite-badge" target="_blank" rel="noopener"
+               href="https://www.nirfindia.org/Rankings/2024/EngineeringRanking.html"
+               title="NIRF 2024 institute placement priors">NIRF 2024</a>
+            <a class="cite-badge" target="_blank" rel="noopener"
+               href="https://proceedings.mlr.press/v54/kull17a.html"
+               title="Kull, Silva Filho, Flach — AISTATS 2017 — Beta calibration">Beta cal. · Kull 2017</a>
+          </div>
+        </div>
+        <button class="hero-scroll-btn" id="hero-scroll-btn" type="button" aria-label="Go to Live Demo">
+          <span>Live Demo</span>
+          <span class="hero-scroll-arrow">↓</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ==================== LIVE DEMO TAB ==================== -->
+    <section id="tab-demo" class="tab tab-active">
+
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">LIVE DEMO</div>
+          <h2 class="section-title">Any resume. Risk score in 30 seconds.</h2>
+          <p class="section-sub">Upload a PDF or pick a persona. Real LightGBM inference + SHAP explanation, live.</p>
+        </div>
+      </div>
+
+      <div class="demo-row">
+        <!-- Upload card -->
+        <div class="card upload-card">
+          <div class="upload-head">
+            <span class="badge-live">LIVE</span>
+            <span class="upload-title">Resume → Risk</span>
+          </div>
+          <label for="resume-input" class="dropzone" id="dropzone">
+            <input type="file" id="resume-input" accept="application/pdf" hidden />
+            <div class="dropzone-icon">↑</div>
+            <div class="dropzone-text">Drop a PDF resume here or click to upload</div>
+            <div class="dropzone-sub">Parsed via Gemini Flash if API key set, else rule-based fallback.</div>
+          </label>
+
+          <!-- Staged-file confirmation: shown after the user selects a PDF.
+               No analysis runs until they click "Analyze Resume". -->
+          <div id="staged-file" class="staged-file hidden">
+            <div class="staged-file-icon">📄</div>
+            <div class="staged-file-info">
+              <div class="staged-file-name" id="staged-file-name">—</div>
+              <div class="staged-file-meta" id="staged-file-meta">—</div>
+            </div>
+            <div class="staged-file-actions">
+              <button id="analyze-btn" class="analyze-btn" type="button">
+                <span class="analyze-btn-label">Analyze Resume</span>
+                <span class="analyze-btn-arrow">→</span>
+              </button>
+              <button id="remove-staged-btn" class="remove-staged-btn" type="button" aria-label="Remove file">
+                Remove
+              </button>
+            </div>
+          </div>
+
+          <div class="persona-row">
+            <div class="persona-row-label">Or try a persona →</div>
+            <button class="persona-btn" data-persona="priya">Priya · MBA Finance · Tier-2</button>
+            <button class="persona-btn" data-persona="arjun">Arjun · BTech CS · IIT</button>
+            <button class="persona-btn" data-persona="meera">Meera · BTech ECE · NIT</button>
+            <button class="persona-btn" data-persona="rahul">Rahul · BTech Mech · Tier-3</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live discovery feed — fills in stage-by-stage as SSE events arrive -->
+      <section id="discovery-panel" class="discovery-panel hidden">
+        <div class="discovery-head">
+          <div>
+            <div class="discovery-eyebrow">FORENSIC DISCOVERY · LIVE</div>
+            <div class="discovery-title" id="discovery-title">Examining your file…</div>
+          </div>
+          <div class="discovery-meta" id="discovery-meta">—</div>
+        </div>
+        <div id="reject-banner" class="reject-banner hidden">
+          <div class="reject-icon">×</div>
+          <div class="reject-body">
+            <div class="reject-title">Not a resume</div>
+            <div class="reject-reason" id="reject-reason">—</div>
+          </div>
+        </div>
+        <div class="discovery-grid">
+          <div class="discovery-col">
+            <div class="discovery-stage-label">Stage</div>
+            <div class="discovery-stages" id="discovery-stages"></div>
+          </div>
+          <div class="discovery-col discovery-col-wide">
+            <div class="discovery-stage-label">Findings</div>
+            <ul class="discovery-feed" id="discovery-feed"></ul>
+          </div>
+          <div class="discovery-col discovery-col-wide" id="discovery-cards-col">
+            <div class="discovery-stage-label">Live cards</div>
+            <div id="ipr-card" class="ipr-card hidden"></div>
+            <div id="elite-banner" class="elite-banner hidden"></div>
+            <div id="anchor-card" class="anchor-card hidden"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== PROFILE GAPS ==================== -->
+      <!-- Shown after parse when critical fields (CGPA, institute, etc.) were
+           imputed rather than extracted. User can correct and re-run. -->
+      <section id="profile-gaps" class="profile-gaps hidden" aria-label="Profile gaps">
+        <div class="gaps-icon">⚠</div>
+        <div class="gaps-body">
+          <div class="gaps-title">Some fields couldn't be read from your resume — using estimates</div>
+          <div class="gaps-sub">Correct them below for a more accurate prediction.</div>
+          <div class="gaps-fields" id="gaps-fields"><!-- injected by JS --></div>
+          <div class="gaps-actions">
+            <button class="gaps-rerun-btn" id="gaps-rerun-btn" type="button">Re-analyse with corrections →</button>
+            <button class="gaps-dismiss-btn" id="gaps-dismiss-btn" type="button">Use estimates (dismiss)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== DECISION INTELLIGENCE SUMMARY ==================== -->
+      <!-- Three-card "Status -> Comparison -> Improvement" narrative.
+           Renders ABOVE the full risk dashboard once a profile has been scored. -->
+      <section id="summary-panel" class="summary-panel hidden" aria-label="Decision intelligence summary">
+        <div class="summary-head">
+          <div>
+            <div class="summary-eyebrow">DECISION INTELLIGENCE</div>
+            <h3 class="summary-title">Status · Comparison · Improvement</h3>
+          </div>
+          <div class="summary-meta" id="summary-meta">—</div>
+        </div>
+
+        <div class="summary-grid">
+
+          <!-- Card 1: Placement Readiness Score -->
+          <article class="summary-card readiness-card" id="readiness-card">
+            <div class="summary-card-eyebrow">PLACEMENT READINESS</div>
+            <div class="readiness-score-wrap">
+              <svg viewBox="0 0 140 140" class="readiness-circle">
+                <defs>
+                  <linearGradient id="readiness-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#22c55e"/>
+                    <stop offset="100%" stop-color="#10b981"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="70" cy="70" r="60" class="readiness-circle-track"></circle>
+                <circle cx="70" cy="70" r="60" class="readiness-circle-bar" id="readiness-bar"></circle>
+              </svg>
+              <div class="readiness-score-num" id="readiness-num">0</div>
+              <div class="readiness-score-suffix">/ 100</div>
+            </div>
+            <div class="readiness-band" id="readiness-band">—</div>
+            <div class="readiness-narrative" id="readiness-narrative">—</div>
+
+            <div class="readiness-bars" id="readiness-bars">
+              <!-- 5 sub-score rows injected by JS -->
+            </div>
+          </article>
+
+          <!-- Card 2: Peer Benchmarking -->
+          <article class="summary-card peer-card" id="peer-card">
+            <div class="summary-card-eyebrow">
+              PEER BENCHMARK
+              <span class="peer-cohort-pill" id="peer-cohort-pill">—</span>
+            </div>
+            <div class="peer-narrative" id="peer-narrative">—</div>
+
+            <div class="peer-rows" id="peer-rows">
+              <!-- 3 comparison bars injected by JS:
+                   placement time | salary median | placement % at 6m -->
+            </div>
+
+            <div class="peer-percentile">
+              <div class="peer-pct-row">
+                <span class="peer-pct-label">Salary percentile</span>
+                <div class="peer-pct-track">
+                  <div class="peer-pct-fill" id="peer-salary-pct-fill"></div>
+                  <div class="peer-pct-marker" id="peer-salary-pct-marker"></div>
+                </div>
+                <span class="peer-pct-val" id="peer-salary-pct-val">—</span>
+              </div>
+              <div class="peer-pct-row">
+                <span class="peer-pct-label">Speed percentile</span>
+                <div class="peer-pct-track">
+                  <div class="peer-pct-fill" id="peer-speed-pct-fill"></div>
+                  <div class="peer-pct-marker" id="peer-speed-pct-marker"></div>
+                </div>
+                <span class="peer-pct-val" id="peer-speed-pct-val">—</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3: What-If Simulator -->
+          <article class="summary-card whatif-card" id="whatif-card">
+            <div class="summary-card-eyebrow">
+              WHAT-IF SIMULATOR
+              <span class="whatif-loading hidden" id="whatif-loading">simulating…</span>
+            </div>
+            <div class="whatif-instruction">Toggle interventions — see live impact on 6-month placement.</div>
+
+            <div class="whatif-toggles" id="whatif-toggles">
+              <!-- Toggle pills injected by JS -->
+            </div>
+
+            <div class="whatif-result">
+              <div class="whatif-meter">
+                <div class="whatif-meter-row">
+                  <span class="whatif-meter-label">P(6m)</span>
+                  <div class="whatif-meter-track">
+                    <div class="whatif-meter-fill before" id="whatif-before-fill"></div>
+                    <div class="whatif-meter-fill after" id="whatif-after-fill"></div>
+                  </div>
+                </div>
+                <div class="whatif-meter-numbers">
+                  <span><b id="whatif-before-pct">—</b><i>before</i></span>
+                  <span class="whatif-arrow">→</span>
+                  <span><b id="whatif-after-pct">—</b><i>after</i></span>
+                  <span class="whatif-delta-pill" id="whatif-delta">—</span>
+                </div>
+              </div>
+              <div class="whatif-narrative" id="whatif-narrative">Pick at least one intervention to simulate.</div>
+              <div class="whatif-salary-row" id="whatif-salary-row">
+                <span>Median salary</span>
+                <span id="whatif-salary-before">—</span>
+                <span class="whatif-arrow">→</span>
+                <span id="whatif-salary-after">—</span>
+                <span class="whatif-salary-delta" id="whatif-salary-delta">—</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- Result panel (3-column dashboard mirroring slide 7) -->
+      <div id="result-panel" class="result-panel hidden">
+
+        <!-- Left rail -->
+        <aside class="rail">
+          <div class="rail-brand">CareerSight</div>
+          <ul class="rail-nav">
+            <li class="rail-active">Risk Dashboard</li>
+            <li>Portfolio View</li>
+            <li>PRI Index</li>
+            <li>Lender Settings</li>
+            <li>Audit Log</li>
+          </ul>
+          <div class="rail-card">
+            <div class="rail-avatar" id="result-avatar">PS</div>
+            <div class="rail-name" id="result-name">—</div>
+            <div class="rail-meta" id="result-meta">—</div>
+          </div>
+        </aside>
+
+        <!-- Center: risk score + survival curve -->
+        <section class="result-main">
+          <div class="result-head">
+            <div>
+              <div class="result-eyebrow">PLACEMENT RISK SCORE</div>
+              <div class="result-tierbar"><span></span><span></span><span></span></div>
+            </div>
+            <div class="result-tier-pill" id="result-tier">—</div>
+            <div class="result-crc">
+              <div class="result-crc-label">CRC FNR ≤</div>
+              <div class="result-crc-val">10%</div>
+            </div>
+          </div>
+
+          <div class="risk-grid">
+            <div class="risk-circle-wrap">
+              <svg viewBox="0 0 120 120" class="risk-circle">
+                <circle cx="60" cy="60" r="52" class="risk-circle-track"></circle>
+                <circle cx="60" cy="60" r="52" class="risk-circle-bar" id="risk-bar"></circle>
+              </svg>
+              <div class="risk-circle-num" id="risk-num">—</div>
+            </div>
+            <div class="risk-stats">
+              <div class="rs"><div class="rs-label">Placement @ 3mo</div><div class="rs-val" id="p-3m">—</div></div>
+              <div class="rs"><div class="rs-label">Placement @ 6mo</div><div class="rs-val" id="p-6m">—</div></div>
+              <div class="rs"><div class="rs-label">Placement @ 12mo</div><div class="rs-val" id="p-12m">—</div></div>
+              <div class="rs"><div class="rs-label">Salary Range</div><div class="rs-val" id="salary-range">—</div></div>
+            </div>
+          </div>
+
+          <div class="drivers">
+            <div class="drivers-label">Top Risk Drivers</div>
+            <div class="drivers-row" id="drivers-row"></div>
+          </div>
+
+          <div class="curve-card">
+            <div class="curve-head">
+              <div>
+                <div class="curve-eyebrow" id="curve-eyebrow">DEEPHIT SURVIVAL · LEE ET AL. 2018</div>
+                <div class="curve-title">Probability of NOT being placed by month <em>t</em></div>
+              </div>
+              <div class="curve-meta" id="curve-meta">—</div>
+            </div>
+            <canvas id="survival-canvas" height="120"></canvas>
+          </div>
+        </section>
+
+        <!-- Right rail -->
+        <aside class="result-side">
+          <div class="card explain-card">
+            <div class="explain-eyebrow">AI RISK EXPLANATION</div>
+            <div class="explain-quote" id="explanation">—</div>
+          </div>
+
+          <div class="card actions-card">
+            <div class="actions-eyebrow">CO-PILOT ACTIONS</div>
+            <div class="actions-list" id="actions-list"></div>
+          </div>
+
+          <div class="card feed-card">
+            <div class="feed-eyebrow">LIVE SYSTEM FEED</div>
+            <ul class="feed-list" id="feed-list"></ul>
+          </div>
+        </aside>
+      </div>
+
+      <div class="card empty-state" id="empty-state">
+        <div class="empty-emoji">📄</div>
+        <div class="empty-title">Pick a persona or upload a resume to begin</div>
+        <div class="empty-sub">All inference is local. No data leaves your machine.</div>
+      </div>
+    </section>
+
+
+    <!-- ==================== PORTFOLIO TAB ==================== -->
+    <section id="tab-portfolio" class="tab">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">LENDER PORTFOLIO</div>
+          <h2 class="section-title">Every borrower, ranked by repayment-risk lead time.</h2>
+          <p class="section-sub">200-student synthetic book scored against the live model. HIGH-risk students surface 90+ days before EMI stress.</p>
+        </div>
+      </div>
+
+      <div class="metric-row" id="metric-row">
+        <div class="metric"><div class="metric-label">Total Students</div><div class="metric-val" id="m-students">—</div></div>
+        <div class="metric"><div class="metric-label">Loan Book</div><div class="metric-val" id="m-loan">—</div></div>
+        <div class="metric"><div class="metric-label">At-Risk Exposure</div><div class="metric-val accent" id="m-risk">—</div></div>
+        <div class="metric"><div class="metric-label">HIGH Risk</div><div class="metric-val high" id="m-high">—</div></div>
+        <div class="metric"><div class="metric-label">MEDIUM Risk</div><div class="metric-val mid" id="m-med">—</div></div>
+        <div class="metric"><div class="metric-label">LOW Risk</div><div class="metric-val low" id="m-low">—</div></div>
+        <div class="metric"><div class="metric-label">Portfolio PRI</div><div class="metric-val accent" id="m-pri">—</div></div>
+      </div>
+
+      <div class="portfolio-grid">
+        <div class="card portfolio-table-card">
+          <div class="card-head">
+            <div class="card-title">Borrowers — sorted by risk score</div>
+            <div class="card-actions">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="high">HIGH</button>
+              <button class="filter-btn" data-filter="medium">MEDIUM</button>
+              <button class="filter-btn" data-filter="low">LOW</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="portfolio-table">
+              <thead>
+                <tr>
+                  <th>Borrower</th>
+                  <th>Course</th>
+                  <th>Institute</th>
+                  <th>CGPA</th>
+                  <th>Loan</th>
+                  <th>P(6mo)</th>
+                  <th>Salary</th>
+                  <th>Risk</th>
+                </tr>
+              </thead>
+              <tbody id="portfolio-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card portfolio-distribution">
+          <div class="card-title">Risk Distribution</div>
+          <canvas id="risk-dist-canvas" height="180"></canvas>
+          <div class="card-title sector-title">PRI by Sector</div>
+          <div class="sector-bars" id="sector-bars"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==================== PRI TAB ==================== -->
+    <section id="tab-pri" class="tab">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">PLACEMENTRISK INDEX (PRI)</div>
+          <h2 class="section-title">Bloomberg of education-loan risk.</h2>
+          <p class="section-sub">Aggregate weekly placement-risk signal across all active borrowers in the system. Sector decomposition shows where the next NPA wave is forming.</p>
+        </div>
+      </div>
+
+      <div class="pri-grid">
+        <div class="card pri-main-card">
+          <div class="pri-main-head">
+            <div>
+              <div class="pri-eyebrow">OVERALL PRI · 13 MONTHS</div>
+              <div class="pri-title-num" id="pri-now">—</div>
+              <div id="pri-delta" class="pri-delta"></div>
+              <div class="pri-sub">Higher = more risk in pipeline</div>
+            </div>
+            <div class="pri-spark-meta">
+              <div class="pri-spark-row"><span class="pri-spark-dot accent"></span><span>Monthly PRI</span></div>
+              <div class="pri-spark-row"><span class="pri-spark-dot dim"></span><span>JobSpeak Index</span></div>
+            </div>
+          </div>
+          <canvas id="pri-canvas" height="200"></canvas>
+          <div class="pri-source">
+            PRI scaled by Naukri JobSpeak Index ·
+            <a href="https://www.naukri.com/blog/tag/naukri-jobspeak/" target="_blank" rel="noopener">naukri.com/blog/tag/naukri-jobspeak</a>
+            · Apr 2026 = 2,858 (+9% YoY)
+          </div>
+        </div>
+
+        <div class="card pri-side">
+          <div class="pri-side-eyebrow">SECTOR DECOMPOSITION</div>
+          <div id="pri-sector-list" class="pri-sector-list"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==================== ARCHITECTURE TAB ==================== -->
+    <section id="tab-arch" class="tab">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">SYSTEM ARCHITECTURE</div>
+          <h2 class="section-title">End-to-end pipeline in under 30 seconds.</h2>
+          <p class="section-sub">Five-layer architecture matching the pitch-deck spec. Each layer degrades gracefully if a downstream module is unavailable.</p>
+        </div>
+      </div>
+
+      <div class="arch-pipeline">
+        <div class="arch-stage">
+          <div class="arch-eyebrow">INGESTION</div>
+          <div class="arch-card"><div class="arch-card-title">Resume PDF</div><div class="arch-card-sub">Gemini Flash → JSON &lt;5s</div></div>
+          <div class="arch-card"><div class="arch-card-title">Student Profile</div><div class="arch-card-sub">CGPA · internships · certs</div></div>
+          <div class="arch-card"><div class="arch-card-title">Market Signals</div><div class="arch-card-sub">Job portals · sector trends</div></div>
+          <div class="arch-card"><div class="arch-card-title">Behavioural Signals</div><div class="arch-card-sub">Portal activity · interviews</div></div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-stage">
+          <div class="arch-eyebrow">FEATURE STORE</div>
+          <div class="arch-card"><div class="arch-card-title">Feature Engineering</div><div class="arch-card-sub">45 features · temporal · cohort · market</div></div>
+          <div class="arch-card"><div class="arch-card-title">DPDP Consent Gate</div><div class="arch-card-sub">Right-to-explanation · AAN anonymisation</div></div>
+          <div class="arch-card"><div class="arch-card-title">PC Algorithm</div><div class="arch-card-sub">Auto DAG · Markov Blanket</div></div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-stage">
+          <div class="arch-eyebrow">PREDICTIVE ENGINE</div>
+          <div class="arch-card accent-card"><div class="arch-card-title">LightGBM Classifier</div><div class="arch-card-sub">Fairness-constrained · CQR salary</div></div>
+          <div class="arch-card"><div class="arch-card-title">Neural ODE Survival</div><div class="arch-card-sub">dh/dt = f(h, t, x(t)) · torchdiffeq</div></div>
+          <div class="arch-card"><div class="arch-card-title">Online Learning</div><div class="arch-card-sub">river · ADWIN drift detection</div></div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-stage">
+          <div class="arch-eyebrow">RISK GATEWAY</div>
+          <div class="arch-card"><div class="arch-card-title">Conformal Risk Control</div><div class="arch-card-sub">Lender sets FNR (e.g. ≤10%)</div></div>
+          <div class="arch-card"><div class="arch-card-title">Federated SHAP</div><div class="arch-card-sub">DP (ε=1.0) · cross-lender</div></div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-stage">
+          <div class="arch-eyebrow">OUTPUT</div>
+          <div class="arch-card"><div class="arch-card-title">Risk Score</div><div class="arch-card-sub">Low / Med / High</div></div>
+          <div class="arch-card"><div class="arch-card-title">SHAP Reason</div><div class="arch-card-sub">Plain-language explanation</div></div>
+          <div class="arch-card accent-card"><div class="arch-card-title">Lender Alert</div><div class="arch-card-sub">90+ day warning</div></div>
+          <div class="arch-card"><div class="arch-card-title">Co-Pilot</div><div class="arch-card-sub">Next-best action</div></div>
+        </div>
+      </div>
+
+      <div class="innovations-grid">
+        <h3 class="innovations-title">10 Innovations Working in Concert</h3>
+        <div class="innov-list" id="innov-list"></div>
+      </div>
+
+      <div class="model-meta-card card">
+        <div class="card-title">Model Diagnostics</div>
+        <div class="model-meta-grid" id="model-meta-grid"></div>
+      </div>
+
+      <div class="card calibration-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">CALIBRATION · BETA SCALING (KULL 2017)</div>
+            <div class="card-title" id="calibration-title">Reliability of P(placed_6m) after Beta calibration</div>
+          </div>
+          <div id="calibration-meta" class="calibration-meta"></div>
+        </div>
+        <canvas id="reliability-canvas" height="240"></canvas>
+        <div class="calibration-footnote">
+          Each dot is a probability bin. Closer to the diagonal = better calibrated.
+          Target ECE &lt; 0.05 (Guo et al., 2017). Beta calibration corrects the systematic
+          miscalibration of LightGBM under class imbalance (Caplin et al., 2022).
+        </div>
+      </div>
+
+      <div class="card federated-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">FEDERATED SHAP · 2 LENDER SHARDS · GAUSSIAN DP</div>
+            <div class="card-title">Privacy-preserving driver attribution across lenders</div>
+          </div>
+          <div id="federated-meta" class="calibration-meta"></div>
+        </div>
+        <div class="federated-body">
+          <div class="federated-col">
+            <div class="federated-col-eyebrow">CENTRALIZED · NO DP</div>
+            <ol id="federated-centralized" class="federated-list"></ol>
+          </div>
+          <div class="federated-col">
+            <div class="federated-col-eyebrow">FEDERATED · ε=1.0 · δ=1e-5</div>
+            <ol id="federated-federated" class="federated-list"></ol>
+          </div>
+        </div>
+        <div class="calibration-footnote">
+          Each lender computes local SHAP, L2-clips to <code>C=1.0</code>, adds Gaussian
+          noise calibrated by <code>σ = C·√(2·ln(1.25/δ))/ε</code> (Dwork &amp; Roth, 2014),
+          then a coordinator aggregates the mean. Faithfulness gate: Spearman ρ ≥ 0.9 between
+          centralized and DP-aggregated rankings (Saifullah et al., 2024,
+          <a href="https://doi.org/10.3389/frai.2024.1236947" target="_blank" rel="noopener">DOI 10.3389/frai.2024.1236947</a>).
+          Production path: <code>flwr</code> + <code>opacus.PrivacyEngine</code>.
+        </div>
+      </div>
+
+      <div class="card causal-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">CAUSAL DISCOVERY · PC ALGORITHM (SPIRTES & GLYMOUR)</div>
+            <div class="card-title">Auto-discovered CPDAG and Markov blanket of P(placed_6m)</div>
+          </div>
+          <div id="causal-meta" class="calibration-meta"></div>
+        </div>
+        <svg id="causal-svg" viewBox="0 0 900 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="calibration-footnote">
+          <code>causallearn.search.ConstraintBased.PC</code> with Fisher-Z conditional
+          independence test (α=0.05). Markov blanket = parents ∪ children ∪ spouses-of-children.
+          Citations:
+          <a href="https://arxiv.org/abs/2103.06544" target="_blank" rel="noopener">Causal Learner Toolbox</a>,
+          <a href="https://arxiv.org/abs/2407.08602" target="_blank" rel="noopener">Huber 2024</a>.
+        </div>
+      </div>
+
+      <div class="card fairness-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">FAIRLEARN AUDIT · DPDP ACT 2023 §10</div>
+            <div class="card-title">Disparate-impact + equalised-odds across protected groups</div>
+          </div>
+          <div id="fairness-summary" class="drift-summary"></div>
+        </div>
+        <div id="fairness-rows"></div>
+        <div class="calibration-footnote">
+          Thresholds (cited in tooltips): DI ≥ 0.80 (EEOC four-fifths rule, 29 CFR §1607.4D);
+          DP diff &lt; 0.10; EO diff &lt; 0.10 (Hardt et al., 2016); EOpp diff &lt; 0.05.
+          Anchored in <a href="https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf" target="_blank" rel="noopener">DPDP Act 2023 §10</a>
+          + RBI Digital Lending Directions 2025. Mitigation path on breach:
+          <code>fairlearn.reductions.ExponentiatedGradient(DemographicParity(eps=0.05))</code>
+          (Agarwal et al., 2018, arXiv:1803.02453).
+        </div>
+      </div>
+
+      <div class="card edge-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">EDGE MODEL · BORN-AGAIN TREE (VIDAL & SCHIFFER 2020)</div>
+            <div class="card-title">Distilled single-tree for offline / WhatsApp-bot deployment</div>
+          </div>
+          <div id="edge-meta" class="calibration-meta"></div>
+        </div>
+        <div id="edge-summary" class="edge-summary"></div>
+        <div class="calibration-footnote">
+          The teacher LightGBM ensemble is distilled into a single decision
+          tree with confidence-weighted soft-label training; thresholds are int16-quantised
+          and serialised to JSON.
+          Download via <code>GET /api/edge_model</code> and run the
+          <a href="/api/edge_model" target="_blank" rel="noopener">30-line pure-Python evaluator</a>
+          shipped in <code>backend/app/edge_model.py</code>. The full payload fits in
+          a single WhatsApp Business webhook response.
+        </div>
+      </div>
+
+      <div class="card counterfactual-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">COUNTERFACTUAL · DOUBLY-ROBUST ATE PER CO-PILOT ACTION</div>
+            <div class="card-title">EconML LinearDRLearner — uplift with 95% CI &amp; placebo refuter</div>
+          </div>
+          <div id="counterfactual-meta" class="calibration-meta"></div>
+        </div>
+        <div id="counterfactual-rows"></div>
+        <div class="calibration-footnote">
+          Each Co-Pilot action's effect is estimated on confounded synthetic data
+          where treatment assignment depends on relevant features. The naive
+          treated-vs-control difference is shown alongside the doubly-robust
+          ATE (Coston et al., 2020, <a href="https://arxiv.org/abs/1909.00066" target="_blank" rel="noopener">arXiv:1909.00066</a>),
+          which corrects for confounding via cross-fit propensity + outcome models.
+          Placebo refuter (random reassignment of treatment) should collapse the
+          ATE to ~0; deviation &gt; 1pp would invalidate the estimate.
+        </div>
+      </div>
+
+      <div class="card bandit-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">CO-PILOT BANDIT · BETA-BERNOULLI THOMPSON SAMPLING</div>
+            <div class="card-title">Action posteriors per (course-family × tier × risk-tier) segment</div>
+          </div>
+          <div id="bandit-summary" class="drift-summary"></div>
+        </div>
+        <div id="bandit-segments"></div>
+        <div class="calibration-footnote">
+          α and β update via <code>POST /api/record_outcome {segment_id, action_id, success}</code>.
+          Mean = α/(α+β); 95% credible interval from <code>scipy.stats.beta.ppf</code>.
+          Regret bound O(√(nK log K)) — Russo & Van Roy, 2018 (arXiv:1707.02038).
+        </div>
+      </div>
+
+      <div class="card drift-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">CONCEPT DRIFT · PSI (SIDDIQI 2006)</div>
+            <div class="card-title">Top features by Population Stability Index</div>
+          </div>
+          <div id="drift-summary" class="drift-summary"></div>
+        </div>
+        <div id="drift-rows" class="drift-rows"></div>
+        <div class="calibration-footnote">
+          PSI thresholds: <strong>&lt; 0.10 stable</strong>, <strong>0.10–0.25 moderate</strong> (monitor),
+          <strong>&gt; 0.25 drift</strong> (retrain). KS p-values Bonferroni-corrected for the
+          57-feature search. Reference: training cohort. Current: synthetic BFSI-shock + cohort change.
+        </div>
+      </div>
+
+      <div class="card ood-card">
+        <div class="card-head">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom:4px">OUT-OF-DISTRIBUTION VALIDATION</div>
+            <div class="card-title">Real-label transfer test on Indian-student placement data</div>
+          </div>
+          <div id="ood-source-tag" class="ood-source-tag">—</div>
+        </div>
+        <div id="ood-rows" class="ood-rows"></div>
+        <div class="calibration-footnote">
+          Drop the Kaggle CSVs into <code>data/ood/</code> to enable real-label folds
+          (<a href="https://www.kaggle.com/datasets/benroshan/factors-affecting-campus-placement" target="_blank" rel="noopener">Roshan</a>,
+          <a href="https://www.kaggle.com/datasets/tejashvi14/engineering-placements-prediction" target="_blank" rel="noopener">Tejashvi</a>).
+          Without them we fall back to a covariate-shifted internal slice — flagged honestly below.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">CareerSight</div>
+      <div class="footer-team">Team Aurdinary · IIIT Allahabad · Hridyesh · Harsh</div>
+      <div class="footer-tag">Predict · Explain · Alert · Improve · <span class="accent">Not credit automation</span></div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js?v=21"></script>
+</body>
+</html>

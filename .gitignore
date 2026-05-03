@@ -1,0 +1,27 @@
+# Secrets — never commit
+.env
+.env.local
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Trained artefacts — bundle.joblib committed so Render deploy works without retraining
+# data/models/bundle.joblib   ← intentionally NOT excluded
+data/bandit_state.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Tool output
+.claude/launch.json

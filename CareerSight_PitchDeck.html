@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CareerSight — AI Placement Risk Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0B0E14;--surface:rgba(255,255,255,.03);--sb:rgba(255,255,255,.08);
+  --text:#F8FAFC;--muted:#94A3B8;
+  --c1:#38BDF8;--c2:#8B5CF6;--c3:#F43F5E;--c4:#10B981;--c5:#F59E0B;
+  --g1:linear-gradient(135deg,#38BDF8,#8B5CF6);
+  --g2:linear-gradient(135deg,#F43F5E,#8B5CF6);
+  --g3:linear-gradient(135deg,#10B981,#38BDF8);
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;}
+#pb{position:fixed;top:0;left:0;height:2px;background:var(--g1);z-index:999;transition:width .45s ease;box-shadow:0 0 10px rgba(56,189,248,.5);}
+.deck{width:100%;height:100%;position:relative;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:44px 68px 70px;opacity:0;transform:translateX(56px);transition:opacity .5s cubic-bezier(.77,0,.18,1),transform .5s cubic-bezier(.77,0,.18,1);pointer-events:none;overflow:hidden;}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:all;}
+.slide.exit{opacity:0;transform:translateX(-56px);}
+.ey{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--c1);margin-bottom:10px;}
+.eyd{width:5px;height:5px;border-radius:50%;background:var(--c1);box-shadow:0 0 8px var(--c1);animation:ep 2.2s ease-in-out infinite;}
+.ey.pur{color:var(--c2)}.ey.pur .eyd{background:var(--c2);box-shadow:0 0 8px var(--c2);}
+.ey.red{color:var(--c3)}.ey.red .eyd{background:var(--c3);box-shadow:0 0 8px var(--c3);}
+.ey.grn{color:var(--c4)}.ey.grn .eyd{background:var(--c4);box-shadow:0 0 8px var(--c4);}
+.ey.amb{color:var(--c5)}.ey.amb .eyd{background:var(--c5);box-shadow:0 0 8px var(--c5);}
+@keyframes ep{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.55)}}
+h2{font-family:'Syne',sans-serif;font-size:clamp(20px,2.5vw,34px);font-weight:800;line-height:1.08;letter-spacing:-.02em;}
+.g1{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.g2{background:var(--g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.g3{background:var(--g3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ga{background:linear-gradient(135deg,var(--c5),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.glass{background:var(--surface);border:1px solid var(--sb);border-radius:14px;backdrop-filter:blur(12px);}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:100px;font-size:10.5px;font-weight:600;letter-spacing:.03em;border:1px solid;}
+.pill-b{background:rgba(56,189,248,.07);border-color:rgba(56,189,248,.28);color:var(--c1);}
+.pill-p{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.28);color:var(--c2);}
+.pill-r{background:rgba(244,63,94,.07);border-color:rgba(244,63,94,.28);color:var(--c3);}
+.pill-g{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.28);color:var(--c4);}
+.pill-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.28);color:var(--c5);}
+.mono{font-family:'JetBrains Mono',monospace;}
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:999;display:flex;align-items:center;gap:11px;}
+.nb{width:34px;height:34px;border-radius:50%;border:1px solid var(--sb);background:rgba(11,14,20,.92);backdrop-filter:blur(12px);color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.nb:hover{border-color:var(--c1);color:var(--c1);box-shadow:0 0 14px rgba(56,189,248,.18);}
+.nc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.12em;min-width:44px;text-align:center;}
+
+/* ══════════ S1 HERO ══════════ */
+#s1{position:relative;}
+.hero-logo{font-family:'Syne',sans-serif;font-size:clamp(60px,9vw,108px);font-weight:800;letter-spacing:-.042em;line-height:.9;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:auto;}
+.hero-tagline{font-family:'Syne',sans-serif;font-size:clamp(14px,1.5vw,19px);font-weight:600;color:var(--muted);max-width:600px;line-height:1.55;margin-top:10px;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:auto;padding-top:16px;}
+.hs{flex:1;min-width:130px;padding:16px 18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:13px;}
+.hs-n{font-family:'Syne',sans-serif;font-size:clamp(24px,2.8vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1;}
+.hs-l{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:4px;}
+
+/* ══════════ S2 PROBLEM ══════════ */
+.prob-layout{flex:1;display:grid;grid-template-columns:1fr 1.15fr;gap:28px;margin-top:12px;align-items:start;}
+
+/* ══════════ S3 FAILURE ══════════ */
+.fail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px;}
+.fc{padding:18px;border-radius:13px;background:rgba(244,63,94,.035);border:1px solid rgba(244,63,94,.17);display:flex;flex-direction:column;gap:10px;}
+.fc-icon{font-size:22px;line-height:1;}
+.fc-t{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;color:var(--c3);line-height:1.3;}
+.fc-b{font-size:11px;color:var(--muted);line-height:1.6;}
+.fail-bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}
+.fb{padding:14px 16px;border-radius:12px;}
+.fbl{background:rgba(244,63,94,.035);border:1px solid rgba(244,63,94,.14);}
+.fbr{background:rgba(16,185,129,.035);border:1px solid rgba(16,185,129,.14);}
+.fb-t{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
+.flt{color:var(--c3)}.frt{color:var(--c4)}
+.fl{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.fl li{font-size:10.5px;color:var(--muted);padding-left:13px;position:relative;line-height:1.5;}
+.fl li::before{content:'';position:absolute;left:0;top:6px;width:5px;height:5px;border-radius:50%;}
+.flr li::before{background:var(--c3);}
+.flg li::before{background:var(--c4);}
+
+/* ══════════ S4 HUB ══════════ */
+.hub-wrap{flex:1;position:relative;margin-top:8px;}
+
+/* ══════════ S5 PIPELINE ══════════ */
+.pipe-wrap{flex:1;display:flex;flex-direction:column;margin-top:10px;}
+.pipe-comp{margin-top:10px;padding:10px 18px;border-radius:10px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.18);display:flex;align-items:center;gap:18px;}
+.comp-lbl{font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--c5);white-space:nowrap;}
+.comp-items{display:flex;gap:14px;flex-wrap:wrap;}
+.ci{font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.ci::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--c5);box-shadow:0 0 5px var(--c5);flex-shrink:0;}
+
+/* ══════════ S6 INNOVATIONS ══════════ */
+.innov-wrap{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px;align-items:start;}
+.innov-stack-col{display:flex;flex-direction:column;gap:0;position:relative;}
+.innov-layer{padding:13px 18px;margin-bottom:3px;border-radius:10px;display:flex;align-items:center;gap:12px;cursor:default;}
+.il-num{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;opacity:.5;flex-shrink:0;width:20px;}
+.il-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text);}
+.il-badge{margin-left:auto;font-size:8.5px;font-weight:600;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;}
+.innov-right{display:flex;flex-direction:column;gap:10px;}
+.ib{padding:14px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--sb);}
+.ib-t{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.ib-b{font-size:10.5px;color:var(--muted);line-height:1.55;}
+.ib-code{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--c1);background:rgba(56,189,248,.07);padding:2px 7px;border-radius:4px;margin-top:5px;display:inline-block;}
+
+/* ══════════ S7 DEMO ══════════ */
+.db{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.07);box-shadow:0 20px 60px rgba(0,0,0,.55);flex:1;margin-top:10px;display:flex;flex-direction:column;max-height:calc(100vh - 150px);}
+.dbar{height:36px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.055);display:flex;align-items:center;padding:0 14px;gap:7px;flex-shrink:0;}
+.dot{width:9px;height:9px;border-radius:50%;}
+.dr{background:#FF5F57;}.dy{background:#FEBC2E;}.dg{background:#28C840;}
+.durl{flex:1;height:20px;border-radius:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);margin:0 10px;display:flex;align-items:center;padding:0 9px;}
+.durl-t{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);}
+.dbody{flex:1;display:grid;grid-template-columns:180px 1fr;overflow:hidden;min-height:0;}
+.dsb{background:rgba(255,255,255,.02);border-right:1px solid rgba(255,255,255,.045);padding:14px 10px;display:flex;flex-direction:column;gap:5px;overflow:hidden;}
+.sb-logo{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;padding-left:4px;}
+.sbi{padding:6px 9px;border-radius:7px;font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:7px;}
+.sbi.on{background:rgba(139,92,246,.1);color:var(--c2);border:1px solid rgba(139,92,246,.18);}
+.sba{width:30px;height:30px;border-radius:50%;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin:8px auto 3px;}
+.sbn{font-size:9.5px;font-weight:600;color:var(--text);text-align:center;}
+.sbc{font-size:8.5px;color:var(--muted);text-align:center;}
+.dmain{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;background:rgba(8,11,18,.7);overflow:hidden;}
+.dp{border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.045);padding:12px;}
+.dp-t{font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+.rbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:8.5px;font-weight:700;}
+.rbh{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);color:var(--c3);}
+.rbm{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--c5);}
+.rbl{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--c4);}
+.fi{padding:7px 9px;border-radius:7px;font-size:8.5px;color:var(--muted);border:1px solid rgba(255,255,255,.04);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;line-height:1.4;}
+.fs{font-size:7.5px;font-weight:600;padding:2px 5px;border-radius:3px;}
+.fso{background:rgba(16,185,129,.1);color:var(--c4);}
+.fsw{background:rgba(245,158,11,.1);color:var(--c5);}
+.fsp{background:rgba(56,189,248,.1);color:var(--c1);}
+
+/* ══════════ S8 HEX ══════════ */
+.hex-scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;margin-top:4px;}
+.hex-legend{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
+.hleg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.hleg-dot{width:8px;height:8px;border-radius:2px;}
+
+/* ══════════ S9 MARKET ══════════ */
+.mkt-layout{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:12px;}
+.pc{padding:14px 16px;border-radius:13px;background:var(--surface);border:1px solid var(--sb);}
+.pc.feat{border-color:rgba(139,92,246,.4);box-shadow:0 0 28px rgba(139,92,246,.1),inset 0 0 28px rgba(139,92,246,.03);}
+.pt{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:3px;}
+.pn{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--text);margin-bottom:5px;}
+.pa{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.02em;}
+.pf{margin-top:7px;display:flex;flex-direction:column;gap:3px;}
+.pfi{font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.pfi::before{content:'✓';color:var(--c4);font-size:8.5px;flex-shrink:0;}
+.mkt-right{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+
+/* ══════════ S10 MOAT ══════════ */
+.moat-layout{flex:1;display:grid;grid-template-columns:1fr 1.55fr;gap:24px;margin-top:10px;align-items:start;}
+.mt{width:100%;border-collapse:collapse;}
+.mt th{font-size:8.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:5px 8px;text-align:left;border-bottom:1px solid var(--sb);}
+.mt td{font-size:10px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.03);color:rgba(248,250,252,.7);vertical-align:middle;}
+.mt tr:first-child td{color:var(--text);font-weight:600;}
+.hv{display:flex;gap:3px;justify-content:center;}
+
+/* ══════════ S11 CLOSE ══════════ */
+.cw{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;}
+.cl{font-family:'Syne',sans-serif;font-size:clamp(44px,7.5vw,88px);font-weight:800;letter-spacing:-.04em;line-height:.92;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ct{font-family:'Syne',sans-serif;font-size:clamp(14px,1.7vw,20px);font-weight:600;color:var(--text);max-width:560px;line-height:1.35;}
+.fs2{position:absolute;padding:10px 14px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(10px);text-align:center;}
+.fsn{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.fsl{font-size:8.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:2px;}
+.tc{padding:14px 22px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(14px);margin-top:6px;}
+.tc-l{font-size:8.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:5px;}
+.tc-m{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--text);}
+</style>
+</head>
+<body>
+<div id="pb"></div>
+<div class="deck" id="deck">
+
+<!-- ═══════════ SLIDE 1 · HERO ═══════════ -->
+<section class="slide active" id="s1" data-i="0">
+  <!-- SVG background: connected nodes -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.45" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ng" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#38BDF8" stop-opacity=".18"/>
+        <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+    </defs>
+    <!-- grid lines -->
+    <pattern id="gr" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0L0 0 0 60" fill="none" stroke="rgba(56,189,248,0.06)" stroke-width="1"/>
+    </pattern>
+    <rect width="100%" height="100%" fill="url(#gr)"/>
+    <!-- glow orb -->
+    <ellipse cx="65%" cy="35%" rx="38%" ry="30%" fill="url(#ng)"/>
+    <!-- nodes -->
+    <g filter="url(#glow)">
+      <circle cx="72%" cy="18%" r="5" fill="#38BDF8" opacity=".7"/>
+      <circle cx="85%" cy="32%" r="3.5" fill="#8B5CF6" opacity=".65"/>
+      <circle cx="78%" cy="48%" r="4" fill="#38BDF8" opacity=".55"/>
+      <circle cx="62%" cy="28%" r="3" fill="#10B981" opacity=".6"/>
+      <circle cx="90%" cy="20%" r="2.5" fill="#F43F5E" opacity=".5"/>
+      <circle cx="67%" cy="58%" r="3.5" fill="#8B5CF6" opacity=".5"/>
+      <circle cx="55%" cy="42%" r="2.5" fill="#38BDF8" opacity=".5"/>
+      <circle cx="93%" cy="45%" r="3" fill="#10B981" opacity=".45"/>
+    </g>
+    <!-- connecting lines -->
+    <g stroke-width="1" opacity=".3">
+      <line x1="72%" y1="18%" x2="85%" y2="32%" stroke="#38BDF8"/>
+      <line x1="85%" y1="32%" x2="78%" y2="48%" stroke="#8B5CF6"/>
+      <line x1="62%" y1="28%" x2="72%" y2="18%" stroke="#10B981"/>
+      <line x1="62%" y1="28%" x2="78%" y2="48%" stroke="#38BDF8" stroke-dasharray="4 3"/>
+      <line x1="90%" y1="20%" x2="85%" y2="32%" stroke="#F43F5E"/>
+      <line x1="78%" y1="48%" x2="67%" y2="58%" stroke="#8B5CF6"/>
+      <line x1="55%" y1="42%" x2="67%" y2="58%" stroke="#38BDF8" stroke-dasharray="3 3"/>
+      <line x1="93%" y1="45%" x2="85%" y2="32%" stroke="#10B981" stroke-dasharray="4 3"/>
+      <line x1="93%" y1="45%" x2="78%" y2="48%" stroke="#38BDF8"/>
+    </g>
+    <!-- pulse rings -->
+    <circle cx="72%" cy="18%" r="12" fill="none" stroke="#38BDF8" stroke-width="1" opacity=".15">
+      <animate attributeName="r" from="8" to="22" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from=".4" to="0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="85%" cy="32%" r="10" fill="none" stroke="#8B5CF6" stroke-width="1">
+      <animate attributeName="r" from="6" to="18" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from=".35" to="0" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;">
+    <div class="ey"><span class="eyd"></span>AI · Education Loan Risk Intelligence</div>
+    <div class="hero-logo">Career<span style="opacity:.75">Sight</span></div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:clamp(13px,1.5vw,17px);color:var(--muted);max-width:560px;line-height:1.6;margin-top:10px;">Linking education loans to career outcomes — predicting placement timelines, salary ranges, and delayed-repayment risk so lenders can intervene early and students get targeted support.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;">
+      <span class="pill pill-b">3/6/12-Month Forecasts</span>
+      <span class="pill pill-p">Salary Prediction</span>
+      <span class="pill pill-r">Delayed-Repayment Risk</span>
+      <span class="pill pill-g">Explainable AI</span>
+      <span class="pill pill-a">Early Lender Alerts</span>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:auto;padding-top:16px;">
+      <div class="hs"><div class="hs-n g2">7.8%</div><div class="hs-l">Education NPA Rate (RBI 2023)</div></div>
+      <div class="hs"><div class="hs-n" style="color:var(--c1)">40%</div><div class="hs-l">Graduates Delayed 6+ Months</div></div>
+      <div class="hs"><div class="hs-n g3">₹4.5L Cr</div><div class="hs-l">India Education Loan Book</div></div>
+      <div class="hs"><div class="hs-n ga">35%</div><div class="hs-l">Defaults Predictable 90 Days Early</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 2 · PROBLEM ═══════════ -->
+<section class="slide" data-i="1">
+  <div class="ey red"><span class="eyd"></span>The Problem</div>
+  <h2>Education loans carry <span class="g2">invisible risk</span></h2>
+  <div class="prob-layout">
+    <!-- Funnel SVG -->
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <svg viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px;">
+        <defs>
+          <linearGradient id="f1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#38BDF8" stop-opacity=".2"/><stop offset="100%" stop-color="#38BDF8" stop-opacity=".06"/></linearGradient>
+          <linearGradient id="f2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#F59E0B" stop-opacity=".22"/><stop offset="100%" stop-color="#F59E0B" stop-opacity=".07"/></linearGradient>
+          <linearGradient id="f3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#F43F5E" stop-opacity=".25"/><stop offset="100%" stop-color="#F43F5E" stop-opacity=".08"/></linearGradient>
+          <linearGradient id="f4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#F43F5E" stop-opacity=".35"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity=".18"/></linearGradient>
+        </defs>
+        <!-- Stage 1: Loan Disbursed -->
+        <polygon points="10,10 290,10 260,90 40,90" fill="url(#f1)" stroke="rgba(56,189,248,.25)" stroke-width="1.5"/>
+        <text x="150" y="42" text-anchor="middle" fill="#F8FAFC" font-family="Syne,sans-serif" font-size="11" font-weight="700">LOAN DISBURSED</text>
+        <text x="150" y="60" text-anchor="middle" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="9">₹4.5 Lakh Crore total book</text>
+        <text x="150" y="76" text-anchor="middle" fill="#38BDF8" font-family="Syne,sans-serif" font-size="10" font-weight="700">$1.8T globally</text>
+        <!-- Stage 2: Graduation -->
+        <polygon points="40,96 260,96 230,176 70,176" fill="url(#f2)" stroke="rgba(245,158,11,.25)" stroke-width="1.5"/>
+        <text x="150" y="128" text-anchor="middle" fill="#F8FAFC" font-family="Syne,sans-serif" font-size="11" font-weight="700">GRADUATION</text>
+        <text x="150" y="146" text-anchor="middle" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="9">EMI clock starts ticking</text>
+        <text x="150" y="162" text-anchor="middle" fill="#F59E0B" font-family="Syne,sans-serif" font-size="10" font-weight="700">Zero lender visibility here</text>
+        <!-- Stage 3: Job Search -->
+        <polygon points="70,182 230,182 200,262 100,262" fill="url(#f3)" stroke="rgba(244,63,94,.28)" stroke-width="1.5"/>
+        <text x="150" y="214" text-anchor="middle" fill="#F8FAFC" font-family="Syne,sans-serif" font-size="11" font-weight="700">JOB SEARCH DELAY</text>
+        <text x="150" y="232" text-anchor="middle" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="9">40% delayed beyond 6 months</text>
+        <text x="150" y="248" text-anchor="middle" fill="#F43F5E" font-family="Syne,sans-serif" font-size="10" font-weight="700">No early warning issued</text>
+        <!-- Stage 4: Default -->
+        <polygon points="100,268 200,268 180,348 120,348" fill="url(#f4)" stroke="rgba(244,63,94,.4)" stroke-width="1.5"/>
+        <text x="150" y="300" text-anchor="middle" fill="#F8FAFC" font-family="Syne,sans-serif" font-size="11" font-weight="700">NPA / DEFAULT</text>
+        <text x="150" y="318" text-anchor="middle" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="9">Discovered after EMI missed</text>
+        <text x="150" y="334" text-anchor="middle" fill="#F43F5E" font-family="Syne,sans-serif" font-size="10" font-weight="700">₹35,100 Cr at risk</text>
+        <!-- Leak arrows -->
+        <path d="M 262 140 Q 285 140 285 160 L 285 200" stroke="#F59E0B" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity=".6"/>
+        <text x="289" y="175" fill="#F59E0B" font-family="Syne,sans-serif" font-size="8" font-weight="700">LEAK</text>
+        <path d="M 202 220 Q 225 220 225 240 L 225 280" stroke="#F43F5E" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity=".6"/>
+        <text x="229" y="255" fill="#F43F5E" font-family="Syne,sans-serif" font-size="8" font-weight="700">LEAK</text>
+        <!-- Intervention window -->
+        <rect x="0" y="358" width="300" height="52" rx="8" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.3)" stroke-width="1.5"/>
+        <text x="150" y="378" text-anchor="middle" fill="#10B981" font-family="Syne,sans-serif" font-size="10" font-weight="700">✓ CareerSight Intervention Window</text>
+        <text x="150" y="398" text-anchor="middle" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="9">90+ days before first missed EMI</text>
+      </svg>
+    </div>
+    <!-- Right: stats + context -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="padding:14px 16px;background:rgba(244,63,94,.04);border:1px solid rgba(244,63,94,.16);border-radius:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:clamp(26px,3vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1;" class="g2">$1.8T</div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:3px;">Global student debt outstanding</div>
+        <div style="font-size:11px;color:rgba(248,250,252,.7);margin-top:6px;line-height:1.5;">Lenders have no forward-looking signals — default is discovered only after an EMI is already missed.</div>
+      </div>
+      <div style="padding:14px 16px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.16);border-radius:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:clamp(26px,3vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1;" class="ga">₹35,100 Cr</div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:3px;">At-risk assets on ₹4.5L Cr book</div>
+        <div style="font-size:11px;color:rgba(248,250,252,.7);margin-top:6px;line-height:1.5;">~35% of these defaults carry detectable behavioural signals 90 days in advance. CareerSight acts in this window.</div>
+      </div>
+      <!-- Bar chart: market scale -->
+      <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--sb);border-radius:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;">NPA Exposure by Segment</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);">
+            <span style="width:60px;text-align:right;font-size:9.5px;">NBFCs</span>
+            <div style="flex:1;height:14px;border-radius:4px;background:rgba(56,189,248,.08);overflow:hidden;"><div style="width:78%;height:100%;background:linear-gradient(90deg,#38BDF8,rgba(56,189,248,.5));border-radius:4px;"></div></div>
+            <span style="font-size:9.5px;color:var(--c1);font-weight:600;width:28px;">9.2%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);">
+            <span style="width:60px;text-align:right;font-size:9.5px;">PSU Banks</span>
+            <div style="flex:1;height:14px;border-radius:4px;background:rgba(139,92,246,.08);overflow:hidden;"><div style="width:65%;height:100%;background:linear-gradient(90deg,#8B5CF6,rgba(139,92,246,.5));border-radius:4px;"></div></div>
+            <span style="font-size:9.5px;color:var(--c2);font-weight:600;width:28px;">7.8%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);">
+            <span style="width:60px;text-align:right;font-size:9.5px;">Pvt. Banks</span>
+            <div style="flex:1;height:14px;border-radius:4px;background:rgba(16,185,129,.08);overflow:hidden;"><div style="width:42%;height:100%;background:linear-gradient(90deg,#10B981,rgba(16,185,129,.5));border-radius:4px;"></div></div>
+            <span style="font-size:9.5px;color:var(--c4);font-weight:600;width:28px;">5.1%</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding:14px 16px;background:rgba(16,185,129,.03);border:1px solid rgba(16,185,129,.14);border-radius:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--c4);margin-bottom:7px;">What the Market Needs</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:4px;">
+          <li style="font-size:10.5px;color:var(--muted);padding-left:13px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;top:5px;width:5px;height:5px;border-radius:50%;background:var(--c4);display:block;"></span>Forward-looking placement probability signals</li>
+          <li style="font-size:10.5px;color:var(--muted);padding-left:13px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;top:5px;width:5px;height:5px;border-radius:50%;background:var(--c4);display:block;"></span>90-day early warning before EMI stress</li>
+          <li style="font-size:10.5px;color:var(--muted);padding-left:13px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;top:5px;width:5px;height:5px;border-radius:50%;background:var(--c4);display:block;"></span>Explainable, auditable, DPDP-compliant decisions</li>
+          <li style="font-size:10.5px;color:var(--muted);padding-left:13px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;top:5px;width:5px;height:5px;border-radius:50%;background:var(--c4);display:block;"></span>Scalable across institute tiers, courses, and cities</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 3 · FAILURE ═══════════ -->
+<section class="slide" data-i="2">
+  <div class="ey red"><span class="eyd"></span>Gap Analysis</div>
+  <h2>Current methods are <span class="g2">insufficient</span></h2>
+  <div class="fail-grid">
+    <div class="fc">
+      <div class="fc-icon">📉</div>
+      <div class="fc-t">GPA + Income at Disbursement</div>
+      <div class="fc-b">A static snapshot — reflects what the student was at enrolment, not what the labour market needs at graduation.</div>
+      <svg viewBox="0 0 120 50" style="width:100%;opacity:.8">
+        <polyline points="5,10 20,12 40,20 60,30 80,38 100,42 115,45" fill="none" stroke="#F43F5E" stroke-width="2"/>
+        <polyline points="5,45 20,43 40,40 60,38 80,35 100,32 115,30" fill="none" stroke="rgba(56,189,248,.3)" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text x="6" y="8" fill="#94A3B8" font-size="7" font-family="DM Sans,sans-serif">Predictive Power</text>
+        <text x="60" y="49" fill="#F43F5E" font-size="7" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">↓ Zero post-graduation signal</text>
+      </svg>
+    </div>
+    <div class="fc">
+      <div class="fc-icon">🧑‍💼</div>
+      <div class="fc-t">Manual Loan Officer Review</div>
+      <div class="fc-b">Inconsistent and unscalable. An officer in a Tier-2 city cannot track that SQL demand in Pune rose 40% last quarter.</div>
+      <svg viewBox="0 0 120 50" style="width:100%;opacity:.8">
+        <rect x="5" y="20" width="20" height="25" rx="3" fill="rgba(244,63,94,.4)"/>
+        <rect x="32" y="10" width="20" height="35" rx="3" fill="rgba(244,63,94,.25)"/>
+        <rect x="59" y="28" width="20" height="17" rx="3" fill="rgba(244,63,94,.4)"/>
+        <rect x="86" y="15" width="20" height="30" rx="3" fill="rgba(244,63,94,.22)"/>
+        <line x1="5" y1="48" x2="115" y2="48" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+        <text x="60" y="8" fill="#F43F5E" font-size="7" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">High inconsistency variance</text>
+      </svg>
+    </div>
+    <div class="fc">
+      <div class="fc-icon">🔔</div>
+      <div class="fc-t">NPA Detection After Missed EMI</div>
+      <div class="fc-b">By the time the alert fires, the intervention window has already closed. Zero recovery opportunity.</div>
+      <svg viewBox="0 0 120 50" style="width:100%;opacity:.8">
+        <line x1="60" y1="5" x2="60" y2="45" stroke="rgba(244,63,94,.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="20" y="14" fill="#94A3B8" font-size="7" font-family="DM Sans,sans-serif" text-anchor="middle">Stress</text>
+        <text x="95" y="14" fill="#F43F5E" font-size="7" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">Alert</text>
+        <path d="M 10 25 Q 35 20 55 30 Q 62 32 62 40" stroke="#F43F5E" stroke-width="2" fill="none"/>
+        <circle cx="62" cy="40" r="3" fill="#F43F5E"/>
+        <text x="60" y="49" fill="#F43F5E" font-size="7" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">Too late to act</text>
+      </svg>
+    </div>
+  </div>
+  <div class="fail-bottom">
+    <div class="fb fbl">
+      <div class="fb-t flt">Current Approach Gaps</div>
+      <ul class="fl flr">
+        <li>Backward-looking at disbursement only</li>
+        <li>No real-time labour market alignment</li>
+        <li>No explainability or auditability</li>
+        <li>No student support or intervention layer</li>
+        <li>Cannot detect improving institutes</li>
+      </ul>
+    </div>
+    <div class="fb fbr">
+      <div class="fb-t frt">What a Real Solution Must Do</div>
+      <ul class="fl flg">
+        <li>Forecast placement at 3, 6, 12 months post-graduation</li>
+        <li>Integrate live job market signals, weekly</li>
+        <li>Provide plain-language SHAP-grounded explanations</li>
+        <li>Alert lenders 90+ days before EMI risk materialises</li>
+        <li>Self-improve with each new placement outcome</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 4 · SOLUTION (HUB & SPOKE) ═══════════ -->
+<section class="slide" data-i="3">
+  <div class="ey pur"><span class="eyd"></span>Our Solution</div>
+  <h2>Predict risk. <span class="g1">Prevent default.</span></h2>
+  <div class="hub-wrap">
+    <!-- SVG connecting lines drawn beneath positioned nodes -->
+    <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" xmlns="http://www.w3.org/2000/svg" id="hub-lines">
+    </svg>
+    <!-- Center node -->
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(139,92,246,.18));border:2px solid rgba(139,92,246,.45);box-shadow:0 0 40px rgba(139,92,246,.22),0 0 80px rgba(56,189,248,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;" id="hub-center">
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Career<br>Sight</div>
+      <div style="font-size:8.5px;color:var(--muted);margin-top:3px;line-height:1.4;">Placement Risk<br>Intelligence</div>
+    </div>
+    <!-- 6 Orbit nodes -->
+    <!-- Top -->
+    <div class="on" data-pos="top" style="position:absolute;left:50%;top:3%;transform:translateX(-50%);z-index:10;width:128px;padding:10px 11px;border-radius:12px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.22);text-align:center;">
+      <div style="font-size:16px;margin-bottom:3px;">🔮</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--c1);">3/6/12-Month Forecast</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Placement probability before graduation stress</div>
+    </div>
+    <!-- Top Right -->
+    <div class="on" style="position:absolute;left:74%;top:14%;transform:translate(-50%,-50%);z-index:10;width:128px;padding:10px 11px;border-radius:12px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.22);text-align:center;">
+      <div style="font-size:16px;margin-bottom:3px;">💰</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--c2);">Salary Estimation</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Expected range by field, institute & live demand</div>
+    </div>
+    <!-- Bottom Right -->
+    <div class="on" style="position:absolute;left:74%;top:86%;transform:translate(-50%,-50%);z-index:10;width:128px;padding:10px 11px;border-radius:12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.22);text-align:center;">
+      <div style="font-size:16px;margin-bottom:3px;">⚡</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--c4);">Lender Alerts</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">90+ days before EMI risk, with budget allocation</div>
+    </div>
+    <!-- Bottom -->
+    <div class="on" style="position:absolute;left:50%;top:91%;transform:translateX(-50%);z-index:10;width:128px;padding:10px 11px;border-radius:12px;background:rgba(244,63,94,.06);border:1px solid rgba(244,63,94,.22);text-align:center;">
+      <div style="font-size:16px;margin-bottom:3px;">🤖</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--c3);">Student Co-Pilot</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Skill-up, resume & recruiter match actions</div>
+    </div>
+    <!-- Bottom Left -->
+    <div class="on" style="position:absolute;left:26%;top:86%;transform:translate(-50%,-50%);z-index:10;width:128px;padding:10px 11px;border-radius:12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.22);text-align:center;">
+      <div style="font-size:16px;margin-bottom:3px;">🔍</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--c5);">SHAP Explainability</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Plain-language reason for every risk score</div>
+    </div>
+    <!-- Top Left -->
+    <div class="on" style="position:absolute;left:26%;top:14%;transform:translate(-50%,-50%);z-index:10;width:128px;padding:10px 11px;border-radius:12px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.2);text-align:center;">
+      <div style="font-size:16px;margin-bottom:3px;">🔄</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--c1);">Self-Improving</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Every placement outcome updates the model live</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 5 · PIPELINE ═══════════ -->
+<section class="slide" data-i="4">
+  <div class="ey"><span class="eyd"></span>System Architecture</div>
+  <h2>End-to-end pipeline <span class="g1">in under 30 seconds</span></h2>
+  <div class="pipe-wrap">
+    <div style="flex:1;position:relative;">
+      <svg viewBox="0 0 960 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M1,1 L7,4 L1,7 Z" fill="#38BDF8" opacity=".7"/>
+          </marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M1,1 L7,4 L1,7 Z" fill="#8B5CF6" opacity=".7"/>
+          </marker>
+          <marker id="arr3" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M1,1 L7,4 L1,7 Z" fill="#10B981" opacity=".7"/>
+          </marker>
+          <filter id="ngl"><feGaussianBlur stdDeviation="6" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+        </defs>
+
+        <!-- Lane headers -->
+        <rect x="0" y="0" width="960" height="24" rx="0" fill="rgba(255,255,255,.02)"/>
+        <text x="96" y="15" fill="#94A3B8" font-size="8" font-family="Syne,sans-serif" font-weight="700" letter-spacing="2" text-anchor="middle">INGESTION</text>
+        <text x="320" y="15" fill="#94A3B8" font-size="8" font-family="Syne,sans-serif" font-weight="700" letter-spacing="2" text-anchor="middle">FEATURE STORE</text>
+        <text x="544" y="15" fill="#94A3B8" font-size="8" font-family="Syne,sans-serif" font-weight="700" letter-spacing="2" text-anchor="middle">PREDICTIVE ENGINE</text>
+        <text x="768" y="15" fill="#94A3B8" font-size="8" font-family="Syne,sans-serif" font-weight="700" letter-spacing="2" text-anchor="middle">RISK GATEWAY</text>
+        <text x="912" y="15" fill="#94A3B8" font-size="8" font-family="Syne,sans-serif" font-weight="700" letter-spacing="2" text-anchor="middle">OUTPUT</text>
+
+        <!-- Vertical separators -->
+        <line x1="192" y1="24" x2="192" y2="256" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+        <line x1="448" y1="24" x2="448" y2="256" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+        <line x1="640" y1="24" x2="640" y2="256" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+        <line x1="848" y1="24" x2="848" y2="256" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+
+        <!-- INGESTION blocks -->
+        <rect x="8" y="40" width="168" height="36" rx="7" fill="rgba(56,189,248,.08)" stroke="rgba(56,189,248,.2)" stroke-width="1"/>
+        <text x="92" y="55" text-anchor="middle" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Resume PDF</text>
+        <text x="92" y="69" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">Gemini Flash → JSON &lt;5s</text>
+
+        <rect x="8" y="86" width="168" height="36" rx="7" fill="rgba(56,189,248,.06)" stroke="rgba(56,189,248,.15)" stroke-width="1"/>
+        <text x="92" y="101" text-anchor="middle" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Student Profile</text>
+        <text x="92" y="115" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">CGPA · internships · certs</text>
+
+        <rect x="8" y="132" width="168" height="36" rx="7" fill="rgba(56,189,248,.06)" stroke="rgba(56,189,248,.15)" stroke-width="1"/>
+        <text x="92" y="147" text-anchor="middle" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Market Signals</text>
+        <text x="92" y="161" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">Job portals · sector trends</text>
+
+        <rect x="8" y="178" width="168" height="36" rx="7" fill="rgba(56,189,248,.04)" stroke="rgba(56,189,248,.12)" stroke-width="1"/>
+        <text x="92" y="193" text-anchor="middle" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Behavioural Signals</text>
+        <text x="92" y="207" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">Portal activity · interviews</text>
+
+        <!-- Arrows ingestion → feature -->
+        <line x1="176" y1="58" x2="204" y2="58" stroke="#38BDF8" stroke-width="1.5" marker-end="url(#arr)" opacity=".6"/>
+        <line x1="176" y1="104" x2="204" y2="104" stroke="#38BDF8" stroke-width="1.5" marker-end="url(#arr)" opacity=".6"/>
+        <line x1="176" y1="150" x2="204" y2="150" stroke="#38BDF8" stroke-width="1.5" marker-end="url(#arr)" opacity=".5"/>
+        <line x1="176" y1="196" x2="204" y2="196" stroke="#38BDF8" stroke-width="1.5" marker-end="url(#arr)" opacity=".4"/>
+
+        <!-- FEATURE STORE -->
+        <rect x="204" y="40" width="232" height="90" rx="7" fill="rgba(139,92,246,.07)" stroke="rgba(139,92,246,.22)" stroke-width="1"/>
+        <text x="320" y="57" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="Syne,sans-serif" font-weight="700">Feature Engineering</text>
+        <text x="320" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">44+ features: temporal, cohort-relative,</text>
+        <text x="320" y="86" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">market-alignment, institute quality, skill-gap</text>
+        <text x="320" y="122" text-anchor="middle" fill="#F8FAFC" font-size="9" font-family="Syne,sans-serif" font-weight="700">PC Algorithm (Causal Discovery)</text>
+        <rect x="210" y="108" width="220" height="18" rx="5" fill="rgba(139,92,246,.1)" stroke="rgba(139,92,246,.18)" stroke-width="1"/>
+        <text x="320" y="120" text-anchor="middle" fill="#8B5CF6" font-size="8.5" font-family="DM Sans,sans-serif">Auto DAG · Markov Blanket · Edge confidence</text>
+
+        <rect x="204" y="140" width="232" height="36" rx="7" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.15)" stroke-width="1"/>
+        <text x="320" y="155" text-anchor="middle" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">DPDP Consent Gate</text>
+        <text x="320" y="169" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">Right-to-explanation · AAN anonymisation</text>
+
+        <!-- Arrows feature → engine -->
+        <line x1="436" y1="85" x2="460" y2="85" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr2)" opacity=".6"/>
+        <line x1="436" y1="158" x2="460" y2="158" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr2)" opacity=".5"/>
+
+        <!-- PREDICTIVE ENGINE -->
+        <rect x="460" y="36" width="168" height="40" rx="7" fill="rgba(56,189,248,.07)" stroke="rgba(56,189,248,.2)" stroke-width="1"/>
+        <text x="544" y="51" text-anchor="middle" fill="#38BDF8" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">LightGBM Classifier</text>
+        <text x="544" y="65" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Fairness-constrained · CQR salary</text>
+
+        <rect x="460" y="86" width="168" height="40" rx="7" fill="rgba(139,92,246,.07)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
+        <text x="544" y="101" text-anchor="middle" fill="#8B5CF6" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Neural ODE Survival</text>
+        <text x="544" y="115" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">dh/dt=f_θ(h,t,x(t)) · torchdiffeq</text>
+
+        <rect x="460" y="136" width="168" height="40" rx="7" fill="rgba(16,185,129,.06)" stroke="rgba(16,185,129,.18)" stroke-width="1"/>
+        <text x="544" y="151" text-anchor="middle" fill="#10B981" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Online Learning</text>
+        <text x="544" y="165" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">river · ADWIN drift detection</text>
+
+        <rect x="460" y="186" width="168" height="36" rx="7" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.18)" stroke-width="1"/>
+        <text x="544" y="201" text-anchor="middle" fill="#F59E0B" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Thompson Bandit Co-Pilot</text>
+        <text x="544" y="215" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Beta posteriors · O(√nK logK) regret</text>
+
+        <!-- Arrows engine → gateway -->
+        <line x1="628" y1="56" x2="652" y2="56" stroke="#38BDF8" stroke-width="1.5" marker-end="url(#arr)" opacity=".55"/>
+        <line x1="628" y1="106" x2="652" y2="106" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr2)" opacity=".55"/>
+        <line x1="628" y1="156" x2="652" y2="156" stroke="#10B981" stroke-width="1.5" marker-end="url(#arr3)" opacity=".55"/>
+
+        <!-- RISK GATEWAY (CRC) -->
+        <rect x="652" y="40" width="184" height="80" rx="7" fill="rgba(244,63,94,.06)" stroke="rgba(244,63,94,.22)" stroke-width="1.5"/>
+        <text x="744" y="58" text-anchor="middle" fill="#F43F5E" font-size="10" font-family="Syne,sans-serif" font-weight="700">Conformal Risk Control</text>
+        <text x="744" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">Lender sets FNR tolerance (e.g. ≤10%)</text>
+        <text x="744" y="86" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="DM Sans,sans-serif">CRC computes minimum threshold λ*</text>
+        <text x="744" y="101" text-anchor="middle" fill="#F43F5E" font-size="8" font-family="Syne,sans-serif" font-weight="700">Distribution-free mathematical guarantee</text>
+
+        <rect x="652" y="130" width="184" height="36" rx="7" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.15)" stroke-width="1"/>
+        <text x="744" y="145" text-anchor="middle" fill="#8B5CF6" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Federated SHAP (ε=1.0 DP)</text>
+        <text x="744" y="159" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Cross-lender model improvement · no raw data</text>
+
+        <!-- Arrow gateway → output -->
+        <line x1="836" y1="80" x2="860" y2="80" stroke="#F43F5E" stroke-width="1.5" marker-end="url(#arr)" opacity=".55"/>
+        <line x1="836" y1="148" x2="860" y2="148" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr2)" opacity=".45"/>
+
+        <!-- OUTPUT -->
+        <rect x="860" y="36" width="92" height="32" rx="7" fill="rgba(16,185,129,.08)" stroke="rgba(16,185,129,.25)" stroke-width="1"/>
+        <text x="906" y="50" text-anchor="middle" fill="#10B981" font-size="9" font-family="Syne,sans-serif" font-weight="700">Risk Score</text>
+        <text x="906" y="62" text-anchor="middle" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">Low/Med/High</text>
+
+        <rect x="860" y="78" width="92" height="32" rx="7" fill="rgba(56,189,248,.06)" stroke="rgba(56,189,248,.2)" stroke-width="1"/>
+        <text x="906" y="92" text-anchor="middle" fill="#38BDF8" font-size="9" font-family="Syne,sans-serif" font-weight="700">SHAP Reason</text>
+        <text x="906" y="106" text-anchor="middle" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">Plain language</text>
+
+        <rect x="860" y="120" width="92" height="32" rx="7" fill="rgba(245,158,11,.06)" stroke="rgba(245,158,11,.2)" stroke-width="1"/>
+        <text x="906" y="134" text-anchor="middle" fill="#F59E0B" font-size="9" font-family="Syne,sans-serif" font-weight="700">Co-Pilot</text>
+        <text x="906" y="148" text-anchor="middle" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">Next-best action</text>
+
+        <rect x="860" y="162" width="92" height="32" rx="7" fill="rgba(244,63,94,.06)" stroke="rgba(244,63,94,.2)" stroke-width="1"/>
+        <text x="906" y="176" text-anchor="middle" fill="#F43F5E" font-size="9" font-family="Syne,sans-serif" font-weight="700">Lender Alert</text>
+        <text x="906" y="190" text-anchor="middle" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">90+ day warning</text>
+
+        <!-- Online flywheel arrow back -->
+        <path d="M 906 205 Q 906 245 544 245 Q 460 245 460 222" stroke="rgba(16,185,129,.35)" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#arr3)"/>
+        <text x="700" y="257" text-anchor="middle" fill="#10B981" font-size="8" font-family="Syne,sans-serif" font-weight="700">↺ Placement outcomes update online model in real-time</text>
+      </svg>
+    </div>
+    <div class="pipe-comp">
+      <span class="comp-lbl">Compliance &amp; Governance Plane</span>
+      <div class="comp-items">
+        <span class="ci">DPDP Consent Gate</span>
+        <span class="ci">SHA-256 Anonymisation (AAN)</span>
+        <span class="ci">Disparity Impact ≥ 0.80</span>
+        <span class="ci">Equal Opportunity ≤ 0.08</span>
+        <span class="ci">Quarterly RBI Audit PDF</span>
+        <span class="ci">DP Budget Accounting (ε ≤ 10/yr)</span>
+        <span class="ci">Right-to-Explanation</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 6 · INNOVATIONS ═══════════ -->
+<section class="slide" data-i="5">
+  <div class="ey"><span class="eyd"></span>Technical Contributions</div>
+  <h2>10 innovations working <span class="g1">in concert</span></h2>
+  <div class="innov-wrap">
+    <div class="innov-stack-col">
+      <div style="font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;">Innovation Stack</div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(56,189,248,.12),rgba(56,189,248,.04));border:1px solid rgba(56,189,248,.2);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">01</span><span class="il-title" style="color:var(--c1)">Neural ODE Survival Model</span><span class="il-badge" style="background:rgba(56,189,248,.1);color:var(--c1);">Live</span>
+      </div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(139,92,246,.12),rgba(139,92,246,.04));border:1px solid rgba(139,92,246,.2);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">02</span><span class="il-title" style="color:var(--c2)">Online Learning (river + ADWIN)</span><span class="il-badge" style="background:rgba(139,92,246,.1);color:var(--c2);">Stream</span>
+      </div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(244,63,94,.1),rgba(244,63,94,.03));border:1px solid rgba(244,63,94,.18);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">03</span><span class="il-title" style="color:var(--c3)">Federated SHAP + Diff. Privacy</span><span class="il-badge" style="background:rgba(244,63,94,.08);color:var(--c3);">Fed</span>
+      </div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(16,185,129,.1),rgba(16,185,129,.03));border:1px solid rgba(16,185,129,.18);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">04</span><span class="il-title" style="color:var(--c4)">Conformal Risk Control (CRC)</span><span class="il-badge" style="background:rgba(16,185,129,.08);color:var(--c4);">Guarantee</span>
+      </div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(245,158,11,.1),rgba(245,158,11,.03));border:1px solid rgba(245,158,11,.18);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">05</span><span class="il-title" style="color:var(--c5)">Thompson Sampling Bandit</span><span class="il-badge" style="background:rgba(245,158,11,.08);color:var(--c5);">RL</span>
+      </div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(56,189,248,.08),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.14);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">06</span><span class="il-title">Automated Causal Discovery (PC Alg)</span>
+      </div>
+      <div class="innov-layer" style="background:linear-gradient(90deg,rgba(139,92,246,.08),rgba(139,92,246,.02));border:1px solid rgba(139,92,246,.14);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">07</span><span class="il-title">Knowledge-Distilled Edge (47KB)</span>
+      </div>
+      <div class="innov-layer" style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">08</span><span class="il-title">Counterfactual Validation Engine</span>
+      </div>
+      <div class="innov-layer" style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);transform:perspective(400px) rotateX(3deg);margin-bottom:4px;">
+        <span class="il-num">09</span><span class="il-title">PlacementRisk Index (PRI)</span>
+      </div>
+      <div class="innov-layer" style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);transform:perspective(400px) rotateX(3deg);">
+        <span class="il-num">10</span><span class="il-title">Live Resume-to-Risk in 30s</span>
+      </div>
+    </div>
+    <div class="innov-right">
+      <div class="ib" style="border-color:rgba(56,189,248,.2);">
+        <div class="ib-t" style="color:var(--c1)">🧬 Neural ODE Survival Model</div>
+        <div class="ib-b">Models the placement hazard as a continuous dynamical system, not a static snapshot. When a student completes a certification mid-month, the survival curve updates immediately — no wait for the monthly batch.</div>
+        <span class="ib-code">dh/dt = f_θ(h, t, x(t))  ·  15ms CPU inference</span>
+      </div>
+      <div class="ib" style="border-color:rgba(139,92,246,.2);">
+        <div class="ib-t" style="color:var(--c2)">🏦 Federated SHAP + DP (ε=1.0)</div>
+        <div class="ib-b">Multiple lenders improve from shared insights without exchanging raw student data. SHAP values leave each environment with calibrated Gaussian noise. A mathematical guarantee, not a policy promise.</div>
+        <span class="ib-code">FedSHAP (2022)  ·  Google DP library  ·  ε budget capped 10/yr</span>
+      </div>
+      <div class="ib" style="border-color:rgba(16,185,129,.2);">
+        <div class="ib-t" style="color:var(--c4)">🛡️ Conformal Risk Control (ICML 2023)</div>
+        <div class="ib-b">Lender specifies: "≤ 10% false-negative rate on HIGH-risk students." CRC computes the minimum threshold satisfying this on any future distribution — without distributional assumptions. A theorem, not a heuristic.</div>
+        <span class="ib-code">E[r(ŷ,y)] ≤ α  ·  updated weekly as outcomes arrive</span>
+      </div>
+      <div class="ib" style="border-color:rgba(245,158,11,.2);">
+        <div class="ib-t" style="color:var(--c5)">🎯 Thompson Sampling Bandit Co-Pilot</div>
+        <div class="ib-b">Replaces static CATE ranking with Beta(α,β) posteriors per action per student segment. Regret bound O(√nK log K) — sublinear, meaning the system improves faster than it makes errors.</div>
+        <span class="ib-code">Actions: cert · resume · mock-interview · role-change · city-change</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 7 · DEMO ═══════════ -->
+<section class="slide" data-i="6">
+  <div class="ey pur"><span class="eyd"></span>Live Demo</div>
+  <h2>Any resume. Risk score <span class="g1">in 30 seconds.</span></h2>
+  <div class="db">
+    <div class="dbar">
+      <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+      <div class="durl"><span class="durl-t">careersight.ai/dashboard · Student: Priya Sharma · MBA Finance · Tier-2</span></div>
+      <div style="width:22px;height:22px;border-radius:5px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--c1);">⚙</div>
+    </div>
+    <div class="dbody">
+      <div class="dsb">
+        <div class="sb-logo">CareerSight</div>
+        <div class="sbi on">📊 Risk Dashboard</div>
+        <div class="sbi">👥 Portfolio View</div>
+        <div class="sbi">📈 PRI Index</div>
+        <div class="sbi">⚙️ Lender Settings</div>
+        <div class="sbi">📋 Audit Log</div>
+        <div style="margin-top:auto;">
+          <div class="sba">PS</div>
+          <div class="sbn">Priya Sharma</div>
+          <div class="sbc">MBA Finance · 2024</div>
+          <div class="sbc" style="margin-top:3px;">Tier-2 · CGPA 7.1</div>
+        </div>
+      </div>
+      <div class="dmain">
+        <!-- Left panel: Radial gauge + data -->
+        <div class="dp">
+          <div class="dp-t">Placement Risk Score</div>
+          <!-- SVG Radial Gauge -->
+          <svg viewBox="0 0 160 100" style="width:100%;max-width:180px;display:block;margin:0 auto;">
+            <defs>
+              <linearGradient id="gv" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#10B981"/><stop offset="45%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#F43F5E"/>
+              </linearGradient>
+            </defs>
+            <!-- Background arc -->
+            <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12" stroke-linecap="round"/>
+            <!-- Filled arc (72% = HIGH) -->
+            <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="url(#gv)" stroke-width="12" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="52.8"/>
+            <!-- Needle -->
+            <line x1="80" y1="80" x2="118" y2="46" stroke="#F43F5E" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="80" cy="80" r="5" fill="#F43F5E"/>
+            <!-- Labels -->
+            <text x="14" y="96" fill="#10B981" font-size="7.5" font-family="Syne,sans-serif" font-weight="700">LOW</text>
+            <text x="65" y="96" fill="#F59E0B" font-size="7.5" font-family="Syne,sans-serif" font-weight="700">MED</text>
+            <text x="120" y="96" fill="#F43F5E" font-size="7.5" font-family="Syne,sans-serif" font-weight="700">HIGH</text>
+            <text x="80" y="73" text-anchor="middle" fill="#F43F5E" font-size="14" font-family="Syne,sans-serif" font-weight="800">72</text>
+          </svg>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-top:2px;">
+            <span class="rbadge rbh">● HIGH RISK</span>
+            <span style="font-size:8px;color:var(--muted);">CRC FNR ≤ 10%</span>
+          </div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;justify-content:space-between;font-size:9px;"><span style="color:var(--muted);">Placement @ 3mo</span><span style="color:var(--c3);font-weight:600;">18%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;"><span style="color:var(--muted);">Placement @ 6mo</span><span style="color:var(--c5);font-weight:600;">51%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;"><span style="color:var(--muted);">Salary Range</span><span style="color:var(--c4);font-weight:600;">₹4.2–5.8L</span></div>
+          </div>
+          <!-- Mini SHAP bars -->
+          <div style="margin-top:10px;">
+            <div style="font-family:'Syne',sans-serif;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:5px;">Top Risk Drivers</div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:8.5px;"><span style="width:70px;color:var(--muted);text-align:right;">Internship</span><div style="flex:1;height:8px;border-radius:3px;background:rgba(244,63,94,.1);overflow:hidden;"><div style="width:85%;height:100%;background:rgba(244,63,94,.6);border-radius:3px;"></div></div></div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:8.5px;"><span style="width:70px;color:var(--muted);text-align:right;">BFSI Demand</span><div style="flex:1;height:8px;border-radius:3px;background:rgba(244,63,94,.1);overflow:hidden;"><div style="width:62%;height:100%;background:rgba(244,63,94,.5);border-radius:3px;"></div></div></div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:8.5px;"><span style="width:70px;color:var(--muted);text-align:right;">Portal Activity</span><div style="flex:1;height:8px;border-radius:3px;background:rgba(244,63,94,.1);overflow:hidden;"><div style="width:45%;height:100%;background:rgba(244,63,94,.4);border-radius:3px;"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Right panel: AI feed + actions -->
+        <div class="dp">
+          <div class="dp-t">AI Risk Explanation</div>
+          <div style="font-size:9.5px;color:rgba(248,250,252,.75);line-height:1.6;padding:8px;border-radius:7px;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.12);margin-bottom:8px;font-style:italic;">"Low internship exposure + below-average institute placement rate + declining BFSI hiring in target region → elevated repayment risk."</div>
+          <div class="dp-t" style="margin-top:4px;">Co-Pilot Actions</div>
+          <div class="fi"><span>SQL Certification (78% of JDs)</span><span class="fs fso">HIGH IMPACT</span></div>
+          <div class="fi"><span>Mock Interview — NBFC roles</span><span class="fs fsw">RECOMMENDED</span></div>
+          <div class="fi"><span>Resume clinic — Finance keywords</span><span class="fs fsp">IN PROGRESS</span></div>
+          <div class="dp-t" style="margin-top:8px;">Live System Feed</div>
+          <div class="fi"><span>Resume parsed via Gemini Flash</span><span class="fs fso">4.2s</span></div>
+          <div class="fi"><span>Feature vector: 44 features</span><span class="fs fso">✓ Done</span></div>
+          <div class="fi"><span>Neural ODE survival curve</span><span class="fs fso">✓ Computed</span></div>
+          <div class="fi"><span>CRC threshold enforcement</span><span class="fs fso">✓ FNR ≤10%</span></div>
+          <div class="fi"><span>Lender alert dispatched</span><span class="fs fsw">92 days early</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 8 · TECH STACK ═══════════ -->
+<section class="slide" data-i="7">
+  <div class="ey amb"><span class="eyd"></span>Technology Stack</div>
+  <h2>Technologies <span class="ga">powering the platform</span></h2>
+  <div class="hex-scene">
+    <!-- Hexagon grid via CSS clip-path -->
+    <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;">
+      <!-- Row 1 -->
+      <!-- ML Models: blue -->
+      <g>
+        <polygon points="80,20 140,20 170,70 140,120 80,120 50,70" fill="rgba(56,189,248,.08)" stroke="rgba(56,189,248,.25)" stroke-width="1.5"/>
+        <text x="110" y="58" text-anchor="middle" fill="#38BDF8" font-size="10" font-family="Syne,sans-serif" font-weight="700">LightGBM</text>
+        <text x="110" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Classifier</text>
+        <text x="110" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Regressor</text>
+      </g>
+      <g>
+        <polygon points="185,20 245,20 275,70 245,120 185,120 155,70" fill="rgba(56,189,248,.08)" stroke="rgba(56,189,248,.25)" stroke-width="1.5"/>
+        <text x="215" y="58" text-anchor="middle" fill="#38BDF8" font-size="10" font-family="Syne,sans-serif" font-weight="700">PyTorch</text>
+        <text x="215" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Neural ODE</text>
+        <text x="215" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">torchdiffeq</text>
+      </g>
+      <g>
+        <polygon points="290,20 350,20 380,70 350,120 290,120 260,70" fill="rgba(56,189,248,.08)" stroke="rgba(56,189,248,.25)" stroke-width="1.5"/>
+        <text x="320" y="58" text-anchor="middle" fill="#38BDF8" font-size="10" font-family="Syne,sans-serif" font-weight="700">river</text>
+        <text x="320" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Online ML</text>
+        <text x="320" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">ADWIN Drift</text>
+      </g>
+      <!-- Data Pipeline: green -->
+      <g>
+        <polygon points="395,20 455,20 485,70 455,120 395,120 365,70" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.25)" stroke-width="1.5"/>
+        <text x="425" y="58" text-anchor="middle" fill="#10B981" font-size="10" font-family="Syne,sans-serif" font-weight="700">Gemini</text>
+        <text x="425" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Flash API</text>
+        <text x="425" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Resume→JSON</text>
+      </g>
+      <g>
+        <polygon points="500,20 560,20 590,70 560,120 500,120 470,70" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.25)" stroke-width="1.5"/>
+        <text x="530" y="58" text-anchor="middle" fill="#10B981" font-size="10" font-family="Syne,sans-serif" font-weight="700">causallearn</text>
+        <text x="530" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">PC Algorithm</text>
+        <text x="530" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">DAG Discovery</text>
+      </g>
+      <!-- Infra/Security: purple -->
+      <g>
+        <polygon points="605,20 665,20 695,70 665,120 605,120 575,70" fill="rgba(139,92,246,.07)" stroke="rgba(139,92,246,.22)" stroke-width="1.5"/>
+        <text x="635" y="58" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="Syne,sans-serif" font-weight="700">FastAPI</text>
+        <text x="635" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">REST / WS</text>
+        <text x="635" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">30s inference</text>
+      </g>
+      <g>
+        <polygon points="710,20 770,20 800,70 770,120 710,120 680,70" fill="rgba(139,92,246,.07)" stroke="rgba(139,92,246,.22)" stroke-width="1.5"/>
+        <text x="740" y="58" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="Syne,sans-serif" font-weight="700">Google DP</text>
+        <text x="740" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Differential</text>
+        <text x="740" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Privacy lib</text>
+      </g>
+      <!-- Frontend: amber -->
+      <g>
+        <polygon points="815,20 875,20 905,70 875,120 815,120 785,70" fill="rgba(245,158,11,.07)" stroke="rgba(245,158,11,.22)" stroke-width="1.5"/>
+        <text x="845" y="58" text-anchor="middle" fill="#F59E0B" font-size="10" font-family="Syne,sans-serif" font-weight="700">WhatsApp</text>
+        <text x="845" y="74" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Business API</text>
+        <text x="845" y="86" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Edge 47KB</text>
+      </g>
+      <!-- Row 2 (offset) -->
+      <g>
+        <polygon points="132,130 192,130 222,180 192,230 132,230 102,180" fill="rgba(56,189,248,.06)" stroke="rgba(56,189,248,.18)" stroke-width="1.5"/>
+        <text x="162" y="168" text-anchor="middle" fill="#38BDF8" font-size="10" font-family="Syne,sans-serif" font-weight="700">SHAP</text>
+        <text x="162" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Explainability</text>
+        <text x="162" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">FedSHAP</text>
+      </g>
+      <g>
+        <polygon points="237,130 297,130 327,180 297,230 237,230 207,180" fill="rgba(56,189,248,.06)" stroke="rgba(56,189,248,.18)" stroke-width="1.5"/>
+        <text x="267" y="168" text-anchor="middle" fill="#38BDF8" font-size="10" font-family="Syne,sans-serif" font-weight="700">scipy</text>
+        <text x="267" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">CRC threshold</text>
+        <text x="267" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">optimization</text>
+      </g>
+      <g>
+        <polygon points="342,130 402,130 432,180 402,230 342,230 312,180" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.18)" stroke-width="1.5"/>
+        <text x="372" y="168" text-anchor="middle" fill="#10B981" font-size="10" font-family="Syne,sans-serif" font-weight="700">Kafka</text>
+        <text x="372" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Event Stream</text>
+        <text x="372" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Placement events</text>
+      </g>
+      <g>
+        <polygon points="447,130 507,130 537,180 507,230 447,230 417,180" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.18)" stroke-width="1.5"/>
+        <text x="477" y="168" text-anchor="middle" fill="#10B981" font-size="10" font-family="Syne,sans-serif" font-weight="700">Redis</text>
+        <text x="477" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Feature Cache</text>
+        <text x="477" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Low latency</text>
+      </g>
+      <g>
+        <polygon points="552,130 612,130 642,180 612,230 552,230 522,180" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.18)" stroke-width="1.5"/>
+        <text x="582" y="168" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="Syne,sans-serif" font-weight="700">MLflow</text>
+        <text x="582" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Experiment</text>
+        <text x="582" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Tracking</text>
+      </g>
+      <g>
+        <polygon points="657,130 717,130 747,180 717,230 657,230 627,180" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.18)" stroke-width="1.5"/>
+        <text x="687" y="168" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="Syne,sans-serif" font-weight="700">PostgreSQL</text>
+        <text x="687" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Outcome</text>
+        <text x="687" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Label Store</text>
+      </g>
+      <g>
+        <polygon points="762,130 822,130 852,180 822,230 762,230 732,180" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.18)" stroke-width="1.5"/>
+        <text x="792" y="168" text-anchor="middle" fill="#F59E0B" font-size="10" font-family="Syne,sans-serif" font-weight="700">React</text>
+        <text x="792" y="184" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Dashboard</text>
+        <text x="792" y="196" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">PRI Terminal</text>
+      </g>
+      <!-- Group labels -->
+      <text x="185" y="258" text-anchor="middle" fill="#38BDF8" font-size="9.5" font-family="Syne,sans-serif" font-weight="700" opacity=".6">ML Models</text>
+      <text x="450" y="258" text-anchor="middle" fill="#10B981" font-size="9.5" font-family="Syne,sans-serif" font-weight="700" opacity=".6">Data Pipeline</text>
+      <text x="680" y="258" text-anchor="middle" fill="#8B5CF6" font-size="9.5" font-family="Syne,sans-serif" font-weight="700" opacity=".6">Infra / Security</text>
+      <text x="845" y="258" text-anchor="middle" fill="#F59E0B" font-size="9.5" font-family="Syne,sans-serif" font-weight="700" opacity=".6">Frontend</text>
+    </svg>
+    <div class="hex-legend">
+      <div class="hleg"><div class="hleg-dot" style="background:rgba(56,189,248,.5);"></div>ML Models</div>
+      <div class="hleg"><div class="hleg-dot" style="background:rgba(16,185,129,.5);"></div>Data Pipeline</div>
+      <div class="hleg"><div class="hleg-dot" style="background:rgba(139,92,246,.5);"></div>Infra / Security</div>
+      <div class="hleg"><div class="hleg-dot" style="background:rgba(245,158,11,.5);"></div>Frontend / Delivery</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 9 · MARKET ═══════════ -->
+<section class="slide" data-i="8">
+  <div class="ey grn"><span class="eyd"></span>Business Model &amp; Market</div>
+  <h2>₹750 Cr Year-2 ARR. <span class="g3">Compounding.</span></h2>
+  <div class="mkt-layout">
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <!-- Tier 1 -->
+      <div class="pc">
+        <div class="pt">Tier 1 — API</div>
+        <div class="pn">Lender Risk API</div>
+        <div class="pa" style="color:var(--c1);">₹8 <span style="font-size:12px;color:var(--muted);">/ score</span></div>
+        <div class="pf">
+          <div class="pfi">Per-student scoring at disbursement</div>
+          <div class="pfi">₹2 monthly re-score</div>
+          <div class="pfi">Year-2 est. ₹64 Cr ARR</div>
+        </div>
+      </div>
+      <!-- Tier 2 Featured -->
+      <div class="pc feat">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div class="pt" style="color:var(--c2);">Tier 2 — SaaS ★ Most Popular</div>
+        </div>
+        <div class="pn">EWS Portfolio Dashboard</div>
+        <div class="pa" style="color:var(--c2);">₹15L <span style="font-size:12px;color:var(--muted);">/ lender / yr</span></div>
+        <div class="pf">
+          <div class="pfi">Real-time portfolio risk monitoring</div>
+          <div class="pfi">Lender alert automation</div>
+          <div class="pfi">Budget optimisation module (+₹50/intervention)</div>
+          <div class="pfi">Year-2 est. ₹300 Cr ARR</div>
+        </div>
+      </div>
+      <!-- Tier 3 -->
+      <div class="pc" style="border-color:rgba(16,185,129,.2);">
+        <div class="pt">Tier 3 — Intelligence</div>
+        <div class="pn">PlacementRisk Index (PRI)</div>
+        <div class="pa" style="color:var(--c4);">₹25L <span style="font-size:12px;color:var(--muted);">/ institution / yr</span></div>
+        <div class="pf">
+          <div class="pfi">Bloomberg-style sector risk signal</div>
+          <div class="pfi">Federated SHAP network membership</div>
+          <div class="pfi">Year-2 est. ₹136 Cr ARR</div>
+        </div>
+      </div>
+    </div>
+    <!-- Donut chart right -->
+    <div class="mkt-right">
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:center;margin-bottom:6px;">Market Opportunity</div>
+      <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:280px;">
+        <defs>
+          <filter id="gs"><feGaussianBlur stdDeviation="8"/></filter>
+        </defs>
+        <!-- Glow rings -->
+        <circle cx="140" cy="140" r="90" fill="none" stroke="rgba(56,189,248,.08)" stroke-width="28" filter="url(#gs)"/>
+        <!-- TAM outer ring -->
+        <circle cx="140" cy="140" r="100" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="30"/>
+        <circle cx="140" cy="140" r="100" fill="none" stroke="rgba(56,189,248,.22)" stroke-width="30" stroke-dasharray="628.3" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 140 140)"/>
+        <!-- SAM mid ring -->
+        <circle cx="140" cy="140" r="72" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="24"/>
+        <circle cx="140" cy="140" r="72" fill="none" stroke="rgba(139,92,246,.35)" stroke-width="24" stroke-dasharray="452.4" stroke-dashoffset="135.7" stroke-linecap="round" transform="rotate(-90 140 140)"/>
+        <!-- SOM inner -->
+        <circle cx="140" cy="140" r="46" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="18"/>
+        <circle cx="140" cy="140" r="46" fill="none" stroke="rgba(16,185,129,.5)" stroke-width="18" stroke-dasharray="289.0" stroke-dashoffset="202.3" stroke-linecap="round" transform="rotate(-90 140 140)"/>
+        <!-- Center text -->
+        <text x="140" y="132" text-anchor="middle" fill="#F8FAFC" font-size="11" font-family="Syne,sans-serif" font-weight="800">₹4,500 Cr</text>
+        <text x="140" y="148" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">Year-2 Valuation</text>
+        <text x="140" y="162" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="DM Sans,sans-serif">@ 6× Revenue</text>
+        <!-- Legend lines -->
+        <line x1="185" y1="68" x2="220" y2="48" stroke="rgba(56,189,248,.4)" stroke-width="1"/>
+        <text x="222" y="44" fill="#38BDF8" font-size="9" font-family="Syne,sans-serif" font-weight="700">TAM</text>
+        <text x="222" y="56" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">₹4.5L Cr Education Book</text>
+        <line x1="192" y1="104" x2="230" y2="94" stroke="rgba(139,92,246,.4)" stroke-width="1"/>
+        <text x="232" y="90" fill="#8B5CF6" font-size="9" font-family="Syne,sans-serif" font-weight="700">SAM</text>
+        <text x="232" y="102" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">₹45,000 Cr (5 NBFC pilots)</text>
+        <line x1="185" y1="165" x2="222" y2="185" stroke="rgba(16,185,129,.4)" stroke-width="1"/>
+        <text x="224" y="181" fill="#10B981" font-size="9" font-family="Syne,sans-serif" font-weight="700">SOM</text>
+        <text x="224" y="193" fill="#94A3B8" font-size="7.5" font-family="DM Sans,sans-serif">₹12,285 Cr recoverable NPA</text>
+      </svg>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:4px;">
+        <div style="padding:10px 12px;border-radius:10px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.14);text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--c4);letter-spacing:-.02em;">50M+</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">Addressable Students</div>
+        </div>
+        <div style="padding:10px 12px;border-radius:10px;background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.14);text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--c1);letter-spacing:-.02em;">&lt;30s</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">Inference Latency</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 10 · MOAT ═══════════ -->
+<section class="slide" data-i="9">
+  <div class="ey red"><span class="eyd"></span>Competitive Landscape</div>
+  <h2>A moat that <span class="ga">compounds with scale</span></h2>
+  <div class="moat-layout">
+    <!-- Radar Chart -->
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;text-align:center;">Capability Radar</div>
+      <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;">
+        <defs>
+          <polygon id="r5" points="140,20 246,91 206,197 74,197 34,91"/>
+        </defs>
+        <!-- Grid pentagons -->
+        <g opacity=".12" stroke="rgba(255,255,255,.5)" stroke-width="1" fill="none">
+          <polygon points="140,110 176,131 163,166 117,166 104,131"/>
+          <polygon points="140,70 212,116 186,192 94,192 68,116"/>
+          <polygon points="140,30 248,102 209,218 71,218 32,102"/>
+        </g>
+        <!-- Axis lines -->
+        <g stroke="rgba(255,255,255,.1)" stroke-width="1">
+          <line x1="140" y1="140" x2="140" y2="30"/>
+          <line x1="140" y1="140" x2="248" y2="102"/>
+          <line x1="140" y1="140" x2="209" y2="218"/>
+          <line x1="140" y1="140" x2="71" y2="218"/>
+          <line x1="140" y1="140" x2="32" y2="102"/>
+        </g>
+        <!-- Legacy (red, small) -->
+        <polygon points="140,110 172,125 165,175 115,175 108,125" fill="rgba(244,63,94,.12)" stroke="rgba(244,63,94,.5)" stroke-width="1.5"/>
+        <!-- CareerSight (blue, large) -->
+        <polygon points="140,36 238,107 200,210 80,210 42,107" fill="rgba(56,189,248,.12)" stroke="rgba(56,189,248,.7)" stroke-width="2"/>
+        <!-- Axis labels -->
+        <text x="140" y="22" text-anchor="middle" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Accuracy</text>
+        <text x="256" y="100" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Speed</text>
+        <text x="212" y="228" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Scalability</text>
+        <text x="40" y="228" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Fairness</text>
+        <text x="4" y="100" fill="#F8FAFC" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Explainability</text>
+        <!-- Legend -->
+        <rect x="60" y="248" width="10" height="3" fill="rgba(56,189,248,.7)" rx="2"/>
+        <text x="75" y="252" fill="#38BDF8" font-size="8" font-family="DM Sans,sans-serif">CareerSight</text>
+        <rect x="145" y="248" width="10" height="3" fill="rgba(244,63,94,.6)" rx="2"/>
+        <text x="160" y="252" fill="#F43F5E" font-size="8" font-family="DM Sans,sans-serif">Legacy/Manual</text>
+        <!-- Data points -->
+        <circle cx="140" cy="36" r="3.5" fill="#38BDF8"/>
+        <circle cx="238" cy="107" r="3.5" fill="#38BDF8"/>
+        <circle cx="200" cy="210" r="3.5" fill="#38BDF8"/>
+        <circle cx="80" cy="210" r="3.5" fill="#38BDF8"/>
+        <circle cx="42" cy="107" r="3.5" fill="#38BDF8"/>
+      </svg>
+    </div>
+    <!-- Comparison table with Harvey Balls -->
+    <div>
+      <table class="mt">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th style="text-align:center;">CareerSight</th>
+            <th style="text-align:center;">CIBIL/Experian</th>
+            <th style="text-align:center;">Bank Internal</th>
+            <th style="text-align:center;">General ML</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Placement Forecasting</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8" stroke="rgba(56,189,248,.4)" stroke-width="1"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/><path d="M7 1 A6 6 0 0 1 13 7 L7 7 Z" fill="rgba(245,158,11,.6)"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>Real-Time Market Signals</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/><path d="M7 1 A6 6 0 0 1 13 7 L7 7 Z" fill="rgba(245,158,11,.6)"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>SHAP Explainability</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/><path d="M1 7 A6 6 0 0 1 13 7 L1 7 Z" fill="rgba(56,189,248,.5)"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>Federated / Multi-Lender</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>Conformal Risk Guarantee</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>Student Co-Pilot</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/><path d="M7 1 A6 6 0 0 1 13 7 L7 7 Z" fill="rgba(245,158,11,.6)"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>Online / Self-Learning</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+          </tr>
+          <tr>
+            <td>Offline / Edge Deployment</td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+            <td style="text-align:center;"><span class="hv"><svg viewBox="0 0 14 14" width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg></span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:var(--muted);">
+          <svg viewBox="0 0 14 14" width="12" height="12"><circle cx="7" cy="7" r="6" fill="#38BDF8"/></svg> Full support
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:var(--muted);">
+          <svg viewBox="0 0 14 14" width="12" height="12"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/><path d="M7 1 A6 6 0 0 1 13 7 L7 7 Z" fill="rgba(245,158,11,.6)"/></svg> Partial
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:var(--muted);">
+          <svg viewBox="0 0 14 14" width="12" height="12"><circle cx="7" cy="7" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/></svg> Not available
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.12);">
+        <div style="font-size:10.5px;color:rgba(248,250,252,.7);line-height:1.6;font-style:italic;">"The outcome feedback flywheel, online model weights, and Federated SHAP aggregations all compound with deployment time — creating an accuracy advantage that grows with scale."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 11 · CLOSING ═══════════ -->
+<section class="slide" data-i="10">
+  <!-- Background glow -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="cg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#38BDF8" stop-opacity=".1"/>
+        <stop offset="60%" stop-color="#8B5CF6" stop-opacity=".06"/>
+        <stop offset="100%" stop-color="#0B0E14" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="50%" cy="50%" rx="50%" ry="45%" fill="url(#cg)"/>
+  </svg>
+  <div class="cw" style="position:relative;z-index:2;">
+    <!-- Floating stat boxes -->
+    <div class="fs2" style="top:2%;left:2%;border-color:rgba(244,63,94,.18);">
+      <div class="fsn g2">7.8%</div><div class="fsl">Education NPA</div>
+    </div>
+    <div class="fs2" style="top:2%;right:2%;border-color:rgba(56,189,248,.18);">
+      <div class="fsn" style="color:var(--c1);">35%</div><div class="fsl">Preventable Defaults</div>
+    </div>
+    <div class="fs2" style="bottom:22%;left:2%;border-color:rgba(16,185,129,.18);">
+      <div class="fsn g3">50M+</div><div class="fsl">Addressable Students</div>
+    </div>
+    <div class="fs2" style="bottom:22%;right:2%;border-color:rgba(245,158,11,.18);">
+      <div class="fsn ga">₹750Cr</div><div class="fsl">Year-2 ARR Target</div>
+    </div>
+    <div class="ey pur" style="margin-bottom:0;"><span class="eyd"></span>AI · Education Loan Risk Intelligence</div>
+    <div class="cl">Career<br><span style="opacity:.7">Sight</span></div>
+    <div class="ct">Linking education loans to career outcomes — giving lenders early visibility into employability risk so they can plan supportive interventions, reduce repayment stress, and improve portfolio health.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px;">
+      <span class="pill pill-b">Predict</span>
+      <span class="pill pill-p">Explain</span>
+      <span class="pill pill-r">Alert</span>
+      <span class="pill pill-g">Improve</span>
+      <span class="pill pill-a">Not credit automation</span>
+    </div>
+    <div class="tc">
+      <div class="tc-l">Team · Hackathon Submission</div>
+      <div class="tc-m">[TEAM NAME] &nbsp;·&nbsp; [INSTITUTION NAME]</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;">[NAME 1] &nbsp;·&nbsp; [NAME 2] &nbsp;·&nbsp; [NAME 3]</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<nav class="nav">
+  <button class="nb" id="prev">&#8592;</button>
+  <span class="nc" id="nc">01 / 11</span>
+  <button class="nb" id="next">&#8594;</button>
+</nav>
+
+<script>
+const slides=Array.from(document.querySelectorAll('.slide'));
+const pb=document.getElementById('pb');
+const nc=document.getElementById('nc');
+const total=slides.length;
+let cur=0;
+
+function pad(n){return n<10?'0'+n:''+n;}
+function goTo(n,d){
+  if(n<0||n>=total)return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit');
+  cur=n;
+  const to=slides[cur];
+  to.style.transform=d>0?'translateX(56px)':'translateX(-56px)';
+  to.style.opacity='0';
+  to.classList.remove('exit');
+  to.classList.add('active');
+  setTimeout(()=>{to.style.transform='';to.style.opacity='';},20);
+  setTimeout(()=>{slides.forEach(s=>s.classList.remove('exit'))},600);
+  nc.textContent=pad(cur+1)+' / '+pad(total);
+  pb.style.width=((cur+1)/total*100)+'%';
+}
+document.getElementById('next').addEventListener('click',()=>goTo(cur+1,1));
+document.getElementById('prev').addEventListener('click',()=>goTo(cur-1,-1));
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(cur+1,1);}
+  else if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(cur-1,-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=tx-e.changedTouches[0].clientX;
+  if(Math.abs(dx)>40)dx>0?goTo(cur+1,1):goTo(cur-1,-1);
+},{passive:true});
+
+// Draw hub-spoke SVG lines after layout
+function drawHubLines(){
+  const svg=document.getElementById('hub-lines');
+  if(!svg)return;
+  const cen=document.getElementById('hub-center');
+  if(!cen)return;
+  const pr=svg.getBoundingClientRect();
+  const cr=cen.getBoundingClientRect();
+  const cx=cr.left+cr.width/2-pr.left;
+  const cy=cr.top+cr.height/2-pr.top;
+  svg.innerHTML='';
+  const cols=['#38BDF8','#8B5CF6','#10B981','#F43F5E','#F59E0B','#38BDF8'];
+  document.querySelectorAll('.on').forEach((node,i)=>{
+    const nr=node.getBoundingClientRect();
+    const nx=nr.left+nr.width/2-pr.left;
+    const ny=nr.top+nr.height/2-pr.top;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cx);line.setAttribute('y1',cy);
+    line.setAttribute('x2',nx);line.setAttribute('y2',ny);
+    line.setAttribute('stroke',cols[i%cols.length]);
+    line.setAttribute('stroke-width','1.5');
+    line.setAttribute('stroke-dasharray','4 4');
+    line.setAttribute('opacity','.35');
+    svg.appendChild(line);
+    // dot at node end
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',nx);dot.setAttribute('cy',ny);dot.setAttribute('r','3');
+    dot.setAttribute('fill',cols[i%cols.length]);dot.setAttribute('opacity','.5');
+    svg.appendChild(dot);
+  });
+}
+setTimeout(drawHubLines,300);
+window.addEventListener('resize',drawHubLines);
+
+pb.style.width=(1/total*100)+'%';
+</script>
+</body>
+</html>

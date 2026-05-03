@@ -1,0 +1,949 @@
+This is a four-critique meta-synthesis. Every claim will be evaluated independently before merging into a final design. Nothing is accepted because it sounds advanced.
+
+---
+
+## 1. Critique-by-Critique Verdict
+
+### Critique A — Document 9 (Prior deep-dive analysis)
+
+| Claim | Classification | Reasoning |
+|---|---|---|
+| Parser misassignment is the silent killer | Correct | Real text, wrong field label — not hallucination, harder to detect, confirmed by all four critiques |
+| First-line-is-identity assumption not eliminated | Correct | Canva/Novoresume templates routinely put the name in right column or large font block; heuristic parsing breaks |
+| IPR coverage gap (21 institutes, ~98% L4/L5) | Correct | Architecture.md section 13 confirms this honestly |
+| Salary CQR trained on synthetic data collapses toward synthetic mean | Correct | The architecture acknowledges synthetic corpus; IPR anchor only overrides L1/L2, which is 2% of traffic |
+| Elite-outlier 5-signal rule is uncalibrated | Correct | Threshold of 2/5 signals is arbitrary; a student with FAANG PPO + 9.5 CGPA but no competitive programming award misses it |
+| DeepHit cold-start 2.5 seconds | Correct | Architecture.md latency table confirms this; pre-warm dummy call is the right fix |
+| SHAP background from synthetic corpus is miscalibrated | Correct | SHAP baselines are expectations over background; synthetic background = wrong baselines |
+| Validity gate signals not listed (opacity) | Partially correct | Architecture.md mentions 8+2 signals but the detail matters for verifying coverage of creative resumes |
+| 1D 2-means fails on 3-column and narrow sidebar layouts | Correct | Mathematical fact: 2-means with a 30% cluster minimum rejects narrow sidebars |
+| Fixed asyncio.sleep stacks on top of real LLM latency | Correct | 3–6s LLM + 3.5s sleep = 9.5s stall on a single step |
+| Three interaction terms (cgpa_percentile × placement_rate, brand × demand, skill × recency) | Partially correct | Direction is correct; LightGBM can discover these implicitly, but explicit terms reduce required depth |
+
+**Overall:** Highest-quality critique. Most claims are correct, specific, and actionable. Weaknesses: does not address temporal survival curve for placement risk, does not propose DBSCAN upgrade for multi-column.
+
+---
+
+### Critique B — Document 10 (Section-aware pipeline)
+
+| Claim | Classification | Reasoning |
+|---|---|---|
+| Section-aware parsing prevents misassignment | Correct | Constraining CGPA extraction to the Education zone eliminates most misassignment |
+| Multi-strategy field extraction (NER + regex + scoring) | Correct | Majority vote across independent methods is more robust than single LLM output |
+| Font-size scoring for name extraction | Correct | The largest-font text on page 1 is nearly always the candidate name on any resume template |
+| Enhanced IPR with real data is the anchor | Correct | Restates the core architectural requirement |
+| Two-stage salary model with log-residuals | Correct | Training on delta = log(actual) – log(IPR_p50) is the correct mathematical formulation |
+| Alpha weighting based on sample_size (not just fallback level) | Correct and missing from current architecture | Larger n should warrant higher α; current architecture uses fixed weights per fallback level |
+| Beta calibration for placement risk | Correct (already in architecture) | Not a new improvement; restates existing design |
+| LinkedIn uses percentile quantiles, not means | Partially correct | The analogy is useful but the LinkedIn system is not directly comparable; treat as illustrative |
+| "Train on real alumni data not synthetic means" | Correct in direction, unsupported in specifics | No specification of where real data comes from; for a hackathon, the NIRF scraper approach is the practical substitute |
+| All features must be present; ablation study to verify | Correct | Under-exploited feature groups (branch demand, behavioral signals) need verification |
+
+**Overall:** Good practical redesign. Strongest contribution is the section-aware parsing proposal and the alpha weight refinement by sample_size. Weakest area: does not address survival curve anchoring or DeepHit cold-start.
+
+---
+
+### Critique C — Document 11 (Span-level extraction + residual models)
+
+| Claim | Classification | Reasoning |
+|---|---|---|
+| Validity gate can still false-accept marksheets masquerading as resumes | Correct | A formatted project report with email, bullet points, and "Introduction" header might score above 0.40 |
+| Field extraction is LLM-centric and brittle | Partially correct | The cascade falls to heuristic if LLM fails, so it is not purely LLM-centric; but LLM output is taken on trust without cross-validation |
+| Scanned PDFs treated as hard rejection | Correct | image_heavy flag → empty profile → no score, rather than OCR → graceful path |
+| Span-level candidate scoring + global consistency checks | Correct | Formalises the cross-field validator idea with a more rigorous name; same mechanism |
+| Fuzzy name match can still go to wrong college | Correct | rapidfuzz ≥ 80 on raw text can match "IIT Kharagpur" to "IIT Kanpur" if abbreviation is ambiguous |
+| Anchoring is hand-tuned and opaque | Correct | Fixed alpha weights per fallback level do not reflect sample_size or distributional uncertainty |
+| Risk and salary models don't expose uncertainty form changes | Correct | A low-confidence profile still gets a precise-looking probability number, not a range |
+| Promote parse/IPR quality features to first-class model inputs | Correct | Currently uncertainty features gate the output band width; they should also be model inputs |
+| User confirmation step when IPR match is low confidence | Correct and practical | If fuzzy match score = 72–80, surface "Did you mean [X]?" rather than silently using a possibly wrong match |
+| Train survival head to be monotone in time (p_3m ≤ p_6m ≤ p_12m) | Correct | This is a structural guarantee that should be enforced as a post-processing step |
+
+**Overall:** Strongest contribution is the "user confirmation for low-confidence IPR match" suggestion and the explicit call for monotone survival curve outputs. Less novel than Document 9 but operationally precise.
+
+---
+
+### Critique D — Document 12 (Quantile-aware anchoring + survival curve blend)
+
+| Claim | Classification | Reasoning |
+|---|---|---|
+| Salary anchoring discards within-institute dispersion | Correct — this is the most important new claim | Scaling all percentiles by a single factor `anchored_p50 / ipr.p50` collapses a top-quartile student's range to the same relative spread as a median student, merely shifted |
+| Need a separate "student percentile within cohort" model | Correct | A lightweight ordinal classifier or quantile regression model can estimate this offline |
+| Quantile-matched blending (weight α higher near student's predicted percentile) | Correct | Mathematically sound; ensures top-quartile students are anchored to institute's upper tail, not middle |
+| Placement risk ignores temporal hazard shape | Correct | Monthly survival curve blending is more accurate than single-point `placement_rate_6m` blend |
+| IPR should store monthly survival curve | Correct and specific | Architecture stores rates at {3m, 6m, 12m}; monotonic interpolation gives monthly approximation |
+| Validity gate can be fooled by formatted project reports | Correct | Restates Document 11's concern |
+| Scanned PDF silent failure leaves judge without a path | Correct | "Paste resume text" panel is the right graceful fallback |
+| SHAP feature names need plain-language mapping | Correct | `internship_brand_score` → "Internship at top company" is immediately meaningful to a non-technical judge |
+| Feature-group SHAP importance audit needed | Correct | If any group contributes <5% of total SHAP weight, investigate |
+| "Ordinal classifier" adds <5ms latency | Correct | A small LightGBM ordinal model on 15 features is trivially fast |
+| Elite outlier floor logic: lower bound = ipr_p75 when elite flag fires | Correct | This prevents the range from showing anything below the institution median for exceptional students |
+
+**Overall:** Strongest contribution is the quantile-aware salary anchoring and survival-curve placement blend. These are the two highest-impact model improvements in any critique. Both are implementable within the current architecture's latency budget.
+
+---
+
+### Critique E — Document 13 (Production-grade enterprise GNN/BHM)
+
+| Claim | Classification | Reasoning |
+|---|---|---|
+| 1D 2-means is structurally brittle for complex layouts | Correct | Stated by all critiques; DBSCAN or multi-cluster approach is the right fix |
+| H3S framework (RoBERTa + BERT-large-cased fusion) at inference | Incorrect for demo context | Adding two transformer models to the critical path would add 300–800ms per inference and requires model downloads; overkill for the marginal gain over section-aware regex + spaCy NER |
+| GNN spatial parsing eliminates column collision errors | Partially correct — correct direction, wrong tool for demo | DBSCAN on word x0/y0 coordinates achieves 90% of the benefit with zero additional dependencies |
+| BHM via MCMC for continuous prior shrinkage | Correct in principle, wrong timing | The architecture already says BHM is computed offline; the continuous shrinkage is the right mathematical insight, but empirical IPR quantiles achieve the same practical effect faster |
+| GMM to model bimodal salary distributions | Partially correct | Bimodality is real for elite institutes; however, GMM requires knowing the mixture component count and training data; for most institutes, the IPR quantiles already capture the spread adequately |
+| LENS dynamic ensemble weighting | Unsupported | No evidence that hidden-state confidence from a GBM is reliably estimable without complex neural wrapper; too fragile for demo |
+| Forensic UI with PDF bounding box overlays | Correct and compelling | Visually overlaying extracted fields on the original PDF is a powerful trust builder; requires frontend PDF.js rendering |
+| "Hard-stop" validity gate on academic CVs with "references" section | Incorrect | Many genuine student resumes include references; this rule would reject valid profiles |
+| Replacing Gemini Flash with 0.6B local LLM | Incorrect for hackathon | Local model download, GPU dependency, and fine-tuning effort do not justify the improvement over Gemini Flash with strict JSON schema |
+| Kernel-based calibration replaces Beta calibration | Unsupported | No evidence this is strictly better than Beta calibration for this problem; Beta calibration is already a strong choice |
+| F1-score of 88.6% claimed for H3S | Unsupported | No source or validation data; cannot be accepted as evidence |
+
+**Overall:** This critique contains several architecturally impressive proposals that are wrong for the specific context (hackathon demo, CPU-only critical path, no training infrastructure available before demo day). The Forensic UI bounding-box overlay is genuinely novel and worth implementing if PDF.js is already present. The DBSCAN upgrade for layout detection should replace the GNN suggestion. The BHM insight should inform how the IPR is structured offline. Everything else is too complex to implement reliably before demo day.
+
+---
+
+## 2. Consensus Analysis
+
+**What all five critiques agreed on (7 items):**
+1. Parser misassignment (correct text, wrong field) is the most dangerous parsing failure
+2. IPR coverage gap is the highest-leverage single improvement
+3. NIRF rank must not dominate; empirical outcome data must anchor predictions
+4. Elite profiles must not collapse to median predictions
+5. Streaming SSE judge-facing flow is the right UX pattern
+6. All heavy computation must be offline; critical path must be dict lookups + small trees
+7. Confidence must be visible per-field and must gate the output band width
+
+**What all critiques missed:**
+1. None explicitly operationalised the IPR monthly survival curve storage format and interpolation method
+2. None specified the exact fallback when the IPR fuzzy match score is 72–80 (ambiguous band)
+3. None addressed what happens when the same document is uploaded twice (idempotency, caching)
+4. None specified how `cgpa_percentile_in_cohort` is computed when the IPR has only salary data (not CGPA distributions) — this is a hidden data dependency
+
+**Where critiques conflicted:**
+
+| Conflict | Document 9 | Document 13 | Resolution |
+|---|---|---|---|
+| Primary parser | Gemini Flash as fast path when available | Replace Gemini Flash with local 0.6B LLM | Keep Gemini Flash; it is faster, free, and has no dependency risk |
+| Layout detection | DBSCAN for 3-column support | Full GNN + SRL | DBSCAN wins: same accuracy for 95% of cases, zero additional dependencies |
+| BHM | Practical approximation via empirical quantiles | Full MCMC at training | Offline MCMC is correct; empirical IPR is a valid approximation |
+| Elite outlier | Weighted signal rule (cumulative ≥5) | Static threshold overrides | Weighted rule wins: continuous, learnable, no hard discontinuities |
+| Calibration | Beta calibration (keep) | Kernel-based calibration (replace) | Beta calibration wins: well-validated, <5ms, already implemented |
+
+**Strongest critique overall:** Document 12. It identified the most technically impactful problem that no other critique had named precisely: the salary anchoring formula discards within-institute dispersion by scaling all percentiles with a single factor. The survival-curve-based placement anchoring is also novel and correct. Both are implementable without structural changes to the pipeline.
+
+**Second strongest:** Document 9. Root-cause analysis is the most complete, and the six specific fixes are all implementable, low-risk, and low-latency.
+
+---
+
+## 3. Contradictions and Resolution
+
+| Contradiction | Options | Resolved Position |
+|---|---|---|
+| Validity gate: rule-based vs. ML classifier | Doc 9 keeps rules; Docs 10/11/13 suggest small ML classifier | Rules for the clear bands (<0.30 and >0.75); a 50-feature logistic classifier only for the 0.30–0.75 ambiguous band. This adds <10ms only for ambiguous documents. |
+| Salary delta: bypass LightGBM for L1/L2 vs. keep LightGBM | Doc 9 bypasses LightGBM; Docs 10/11 keep it | Bypass for L1/L2 (use percentile-shift directly on IPR); retain LightGBM for L3–L5 where IPR data is thin and model has more freedom |
+| Multi-column: DBSCAN vs. GNN | Doc 9 suggests DBSCAN; Doc 13 suggests GNN | DBSCAN wins on all three criteria: latency, implementation complexity, demo reliability |
+| OCR: async background vs. synchronous | Most critiques say async | Async with visible "Scanning your document" status message is correct; never block the main SSE stream |
+| Scanned PDFs: reject vs. OCR path | Current architecture effectively rejects; Docs 11/12 say OCR path | OCR path is correct. Rejecting valid scanned resumes is wrong. "Paste text" fallback is acceptable if OCR itself fails. |
+| Placement risk: single `placement_rate_6m` blend vs. monthly curve | Doc 12 says monthly curve | Monthly curve blend is correct and only requires extending the IPR with 3–4 temporal points |
+
+---
+
+## 4. Decision Matrix
+
+| Design choice | Options | Winner | Reason | Tradeoff |
+|---|---|---|---|---|
+| Primary parser | Gemini Flash / OpenRouter → heuristic | Keep current cascade | Zero dependency risk; already works; Gemini Flash is fast and accurate | External network call adds 1.5–4s; mitigated by 5s timeout + heuristic fallback |
+| Layout detection upgrade | 2-means → DBSCAN | DBSCAN on word x0 coordinates, 3-cluster support | Handles narrow sidebars and 3-column layouts; scikit-learn, zero new dependencies, +2ms | Cannot handle overlapping x-ranges; those cases fall through to LLM which handles garbled text |
+| Salary anchoring | Single median scale → quantile-aware percentile shift | Quantile-aware percentile shift with student percentile model | Preserves within-institute dispersion; top-quartile student's range anchors to institute's upper tail, not just shifted median | Requires pre-trained ordinal/percentile classifier; +5ms inference |
+| Placement anchoring | Single `placement_rate_6m` blend → monthly survival curve blend | Monthly survival curve blend | Captures institute-specific hazard shape (early vs. late placing institutes) | Requires IPR to store {3m, 6m, 9m, 12m} rates; monotonic interpolation fills months |
+| Elite outlier detection | Fixed 5-signal rule → weighted rule | Weighted signal scoring (cumulative weight ≥ 5) | More calibrated; no hard boundary jumps; FAANG PPO + top CGPA always fires | Weights are still heuristic; production version should be learned from real outcome data |
+| IPR coverage expansion | Manual curation → NIRF scraper | NIRF scraper (offline, one-time) | Expands 21 → 800+ institutes; no inference change; highest ROI single improvement | NIRF data is self-reported; flag as `data_quality: "inferred"`; log-normal approximation for percentiles |
+| Alpha weight refinement | Fixed by fallback level → dynamic by sample_size | Dynamic alpha: `α = min(0.8, 0.4 + 0.004 × sample_size)` | Rewards large sample sizes; penalises thin data; principled rather than arbitrary | Requires storing sample_size in IPR (already present) |
+| SHAP background | Synthetic corpus → IPR-calibrated | IPR-calibrated background | Correct baselines = correctly scaled attributions; <5ms to build, pre-loaded | Construction requires joint feature distribution per institute; use IPR quantiles for salary features, synthetic distribution for others |
+| Scanned PDF handling | Hard reject → OCR path | OCR async path with visible status | Reject-on-scan excludes valid candidates from less-digitally-savvy backgrounds | Tesseract adds 4–8s on CPU; async with visible status message masks this |
+| DeepHit cold-start | Lazy load → pre-warm at startup | Pre-warm dummy call at startup | Eliminates 2.5s stall for first request after idle | +2.5s at startup; mitigated by health-check cron ping |
+| Cross-field validator | None → deterministic rules | 5-rule consistency validator (post-parse) | Catches misassignment without re-extraction; <5ms; catches the most common silent failure mode | Cannot catch all misassignments; false penalty possible for legitimate edge cases (e.g., institutes with company-like names) |
+| Feature uncertainty propagation | Gate on output band width only → also feed to model | Uncertainty features as both band-width gate AND model inputs | Model learns to be conservative when parse confidence is low; more honest predictions | Small risk of model learning to be unconservative on all profiles; regularise |
+
+---
+
+## 5. Red-Team Validation Results
+
+**Case 1 — Non-resume PDF (course brochure with email + bullet points)**
+What happens: Validity gate scores structural signals (email: +1, bullet ratio: +1, section headers: 0 or +1 if PDF has "Programme Overview"). May score 0.35–0.55. Falls in ambiguous band → lightweight logistic classifier fires → trained classifier should detect heavy prose ratio, long paragraph blocks, missing personal pronouns, academic vocabulary ("prerequisites", "semester", "credits"). Result: rejected with evidence. Works correctly if the classifier is trained with project reports and brochures as hard negatives.
+**What fails:** If the brochure is formatted exactly like a resume (rare but possible). Semantic check (proportion of academic terms "abstract", "introduction", "literature review") adds another negative signal.
+**Fix:** Add semantic negative signals to validity gate. Worth it: yes, +5ms, high trust value.
+
+**Case 2 — Resume with unusual formatting (Canva two-tone template, name in right column in large font)**
+What happens: 2-means or DBSCAN detects two columns. Left column text and right column text separated correctly. Name in right column at large font → font-size signal in name extractor identifies it as `max(word['size'])` on page 1. Three-strategy majority vote (NER + font-size + contact-block proximity) finds name in right column.
+**What fails:** If the name is embedded as a vector graphic (not text). All three strategies return null. Result: name confidence = 0.0, amber badge in UI. Judge can correct inline.
+**Fix:** If name not found, set confidence 0.0, show amber badge "Name not detected — click to enter." Do not fabricate.
+
+**Case 3 — Scanned / image-only PDF**
+What happens: pdfplumber extracts < 150 characters → `image_heavy = True`. Currently: validity gate flags, profile is empty, no scoring. NEW behaviour: SSE emits `"Scanned document detected — applying OCR (a few extra seconds)"`. Async Tesseract call. If OCR succeeds with ≥ 500 characters, continue to parser cascade. If OCR fails (garbled text), show "Paste your resume text" panel.
+**What fails:** OCR quality on low-resolution scans is unreliable. If the OCR text is garbled enough, the parser extracts nonsense fields with medium confidence (not caught by validity gate, which already accepted the document).
+**Fix:** After OCR, re-run the semantic zone and cross-field consistency validator. If both fail (no sections detected, all fields low confidence), route to "paste text" fallback. Accept the 4–8s latency for this path with a visible status message.
+
+**Case 4 — Multi-column resume with narrow left sidebar**
+What happens: 1D 2-means fails because sidebar has <30% of words → treated as single column → skills from sidebar get interleaved with experience from main column. NEW behaviour: DBSCAN on x0 coordinates with ε = 30px detects narrow cluster (sidebar) + wide cluster (main body) regardless of word count ratio. Left column read top-to-bottom first, then right column.
+**What fails:** DBSCAN cannot distinguish overlapping x-ranges if sidebar and main body overlap horizontally. In that case, falls through to LLM cascade which handles garbled text reasonably.
+**Fix:** If DBSCAN finds clusters with overlapping x-ranges, mark `layout=complex`, pass full text to LLM cascade with a "complex layout detected" note in the prompt. Acceptable.
+
+**Case 5 — Document with missing section headers**
+What happens: Section-zone detector finds zero headers → falls back to unconstrained extraction → all field confidences reduced by 0.2 uniformly → cross-field consistency validator still runs. Most fields still extract correctly for simple single-column resumes without headers.
+**What fails:** Misassignment rate increases because zone constraints are absent. Institute name may be confused with employer name.
+**Fix:** Uniform -0.2 confidence reduction is already specified. For critical fields (institute, degree), fall to multi-strategy extraction with explicit cross-field checks. Acceptable — this is the right degradation path.
+
+**Case 6 — Ambiguous identity extraction**
+What happens: Three-strategy name extraction (spaCy PERSON NER + font-size signal + contact-block proximity) runs. Scenario: two names found (candidate + manager reference). Font-size signal picks the largest text. Contact-block proximity picks the text above the email. If both point to the same token → confidence 0.85+. If they disagree → confidence 0.40, amber badge.
+**What fails:** Resumes that list a reference name at the top in large font (rare but exists). Cross-field consistency validator: if extracted name matches any known institute name, skill term, or company name → reduce confidence by 0.4.
+**Fix:** The deny-list check handles the main failure mode. Residual ambiguity shows as amber badge.
+
+**Case 7 — Ambiguous institution extraction**
+What happens: Section-zone detector finds Education zone. Multi-evidence extraction runs: all proper-noun sequences in Education zone, fuzzy matched against IPR alias map. If highest match score = 85, top-1 is accepted. If highest match score = 72–80, surface disambiguation: "Did you mean: (1) [Match A] (2) [Match B]? Click to confirm." Judge confirms. Post-confirmation, confidence = 1.0.
+**What fails:** In a live demo where the judge isn't interacting (automated test), no confirmation is given and the system must choose. Use top-1 with confidence = 0.55.
+**Fix:** Automated fallback: use top-1, confidence = 0.55, IPR `data_quality = "low"`, salary range widened by 1.20×. Surface amber banner.
+
+**Case 8 — Known institute, branch unclear**
+What happens: IPR lookup falls to L2 (institute + degree, all branches). Salary range is wider (institute aggregate across all branches). Confidence badge in IPR card: "Branch not detected — using institute-wide data." Risk model still has access to all 59 other features.
+**What fails:** A B.Tech Civil student and B.Tech CS student from the same institute have very different placement profiles; L2 average blends both. `branch_demand_index` feature is unavailable.
+**Fix:** If branch is not found, set `branch_demand_index = national_average` and show amber badge "Branch not detected". The model still distinguishes through skills extracted. Acceptable degradation.
+
+**Case 9 — Sparse-data institution (regional private college, not in IPR, not in NIRF top-1000)**
+What happens: IPR lookup fails L1–L3. L4 cluster lookup triggers: `tier × degree × branch_family`. Salary range widened by 1.15×. Data quality = "low". Amber warning banner. Judge sees "Using national estimates for [tier] [branch] colleges — limited institute-specific data."
+**What fails:** If the student is an outlier from a weak institute, the L4 cluster may still give a reasonable range, but it won't capture the specific institute's actual distribution. This is an inherent data limitation, not a design flaw.
+**Fix:** The 1.15× widening and the explicit banner are honest and correct. No fix needed beyond the NIRF scraper expansion (which may bring this institute to L2/L3).
+
+**Case 10 — Exceptional high-achieving profile (FAANG PPO + national CP rank + 9.5 CGPA + GSoC)**
+What happens: Elite outlier scoring: FAANG PPO internship = 3, national CP rank = 3. Total weight = 6 ≥ threshold of 5. Elite branch fires. Salary lower bound = `ipr_p75` instead of `ipr_p10`. Upper bound = uncapped. Quantile-aware anchoring: student percentile = 0.95 (CGPA top 5% + internship brand + CP rank). `predicted_p50 = ipr_percentile_at(95)` ≈ near p90. Result: salary range anchored to institute's upper tail.
+**What fails:** If the IPR has too few data points at the p90, the percentile interpolation may be noisy. 
+**Fix:** For elite flag + n < 50 in IPR, revert to `lower_bound = ipr_p75`, `upper_bound = 2 × ipr_p90` (the current architecture's approach for L1 elite cases).
+
+**Case 11 — Profile that should not be underpredicted (strong regional institute, not in IPR)**
+What happens: Falls to L4 cluster. Cluster average for "Tier-2 state technical university + CSE" may underestimate if this institute's actual placement is stronger than its tier peers.
+**What fails:** The NIRF scraper (Fix 3) would have caught this if the institute is in NIRF top-1000. If it is not, the L4 cluster is the best available.
+**Fix:** After NIRF scraper runs, this institute gets L2 data with `data_quality: "inferred"`. Acceptable.
+
+**Case 12 — Profile that should not be overpredicted (reputed brand name institute, weak actual placements)**
+What happens: IPR lookup finds the institute at L1 with actual placement data. Actual data shows weak placement rates (say 45% at 6m) and lower salary distribution. Model uses real IPR data, not brand reputation. This is exactly the problem the IPR was designed to solve.
+**What fails:** Nothing, if the IPR has correct data. If the NIRF scraper ingests inflated self-reported data, the IPR itself is wrong.
+**Fix:** Tag NIRF-scraped entries as `data_quality: "inferred"`. When `data_quality = "inferred"`, set `α = 0.5` rather than 0.7 for blending.
+
+**Case 13 — Low parser confidence (scanned, OCR degraded, section headers missing)**
+What happens: `parse_confidence_mean < 0.50` → salary band widened by 1.20×. `parse_confidence_min < 0.30` → salary band widened by additional 1.10×. Uncertainty features fed to model. UI shows amber badges on every field.
+**What fails:** If the user proceeds with a degraded parse, the score may be unreliable even with widened bands.
+**Fix:** When `parse_confidence_mean < 0.40`, surface a persistent amber banner: "Prediction quality limited — resume content was hard to read. Enter details manually for a more accurate estimate." Include inline edit fields.
+
+**Case 14 — Conflicting signals across document (internship listed in multiple sections with different durations)**
+What happens: Multi-evidence extraction finds two mentions of the same employer with different months. Cross-field consistency validator fires rule: if two internship entries for same employer have conflicting dates, flag both as `confidence -= 0.3`. Output: "Internship: Flipkart (duration unclear)" with amber badge.
+**What fails:** If the document lists two separate Flipkart internships legitimately, the validator incorrectly penalises both.
+**Fix:** Before penalising, check if the date ranges are non-overlapping (could be two legitimate internships). If non-overlapping, accept both; if overlapping, flag conflict.
+
+**Case 15 — Duplicate or noisy pages**
+What happens: Text hash deduplication is already in `pdf_extract.py`. Duplicate pages are dropped before parsing. Works correctly.
+**What fails:** Near-duplicate pages (same content, minor differences) won't match on hash. Unlikely to cause real problems — parser would extract the same fields twice and keep the first.
+**Fix:** No fix needed; this is a low-probability edge case with low impact.
+
+---
+
+## 6. Recommended Improved Architecture
+
+The improved architecture retains the five-stage pipeline and adds six targeted modifications.
+
+**Stage 0 — Pre-flight (unchanged, < 50ms)**
+Magic bytes + size check + emit `upload` SSE event.
+
+**Stage 1 — Validity Gate v2 (< 80ms)**
+Keep the 8+2 rule-based signal scoring for the clear bands. Add two new negative signals:
+- `academic_document_score`: proportion of text tokens from an academic vocabulary list ("abstract", "introduction", "methodology", "references", "literature review", "keywords") that is not in any resume-positive section. If this proportion > 0.15 and the document has no internship/experience section, add -0.3 penalty.
+- `continuous_prose_ratio`: ratio of lines longer than 80 characters to total lines. Resumes have few long prose lines (mostly bullet points). If > 0.4, add -0.2 penalty.
+
+Add a 50-feature logistic classifier (TF-IDF top-25 unigrams + structural features) that fires only in the ambiguous band (0.30–0.75) to resolve edge cases. Below 0.30 → hard reject. Above 0.75 → hard accept. 0.30–0.75 → classifier decides.
+
+**Stage 2 — Layout-Aware Extraction v2 (< 100ms/page)**
+Replace 1D 2-means with DBSCAN on `(x0, x1)` word coordinates (ε = 25px, min_samples = 5). DBSCAN naturally handles 3-column layouts, narrow sidebars, and irregular spacing without a minimum-cluster-size constraint.
+Add: `layout_cluster_count` to SSE events ("Three-column layout detected — reading left, center, right columns in order").
+Async OCR path: if `image_heavy = True`, trigger Tesseract asynchronously and emit `scanning_document` SSE event. Continue SSE stream with other stages where possible. Merge OCR text when ready.
+
+**Stage 3 — Parser Cascade v2 + Cross-Field Validator (< 50ms after LLM)**
+Keep LLM cascade as-is. After parse output, run two new post-parse steps:
+
+*Name disambiguation (10ms):*
+Three-strategy majority vote: (1) spaCy PERSON NER on first 400 chars, (2) `max(word['size'])` text from pdfplumber page 1, (3) text immediately preceding email pattern. Accept if ≥ 2 strategies agree. Otherwise, `field_confidence["name"] = 0.40`.
+
+*Cross-field consistency validator (5ms):*
+Five rules with hard confidence penalties (not nullification):
+1. Institute ≠ known employer (against 10k-company list): both → –0.4
+2. CGPA outside [0.0, 10.0]: flag as extraction error, normalise or null
+3. Graduation year outside [2015, 2030]: –0.4 on year, propagate to salary widening
+4. Name matches known institute name or skill term: –0.4 on name field
+5. Degree keyword and branch keyword in same field: –0.3 on branch field
+
+*Semantic zone detection (5ms):*
+Detect section headers (line matching ≥ 1 of 80+ header keywords, no comma/period/digit, followed by ≥ 2 lines). Constrain field extraction to correct zones. If no zones detected: uniform –0.2 on all field confidences.
+
+**Stage 4 — IPR Lookup v2 (< 5ms)**
+Keep 5-level fallback ladder. Add:
+- Dynamic alpha: `α = min(0.80, 0.40 + 0.004 × sample_size)` — rewards large sample sizes
+- Store monthly survival curve: {1m, 2m, 3m, 6m, 9m, 12m} placement rates via monotonic interpolation from existing {3m, 6m, 12m} data points
+- User confirmation trigger: if rapidfuzz score = 70–80 (below current 80 threshold), surface top-2 candidates with disambiguation question rather than silently using top-1
+- IPR now has 800+ institutes after NIRF scraper; `data_quality: "inferred"` for NIRF-derived entries
+
+**Stage 5 — Scoring v2 (< 150ms warm)**
+*Salary (quantile-aware):*
+```python
+student_percentile = ordinal_model.predict(feature_vector)  # <5ms
+# For each quantile q in [10, 25, 50, 75, 90]:
+dist = abs(q - student_percentile) / 100
+α_q = dynamic_alpha * (1 - dist)
+anchored_q = α_q * ipr_quantile(q) + (1 - α_q) * cqr_quantile(q)
+# Enforce monotonicity
+salary_range = enforce_monotone([anchored_10, anchored_25, anchored_50, anchored_75, anchored_90])
+# Display: ₹{anchored_25}L – ₹{anchored_75}L (most likely: ₹{anchored_50}L)
+```
+
+*Elite branch:*
+Weighted signal scoring (replace fixed 5-signal rule):
+| Signal | Weight |
+|---|---|
+| FAANG/unicorn internship ≥ 2 months | 3 |
+| National/international CP rank | 3 |
+| CGPA ≥ ipr_p90_cgpa | 2 |
+| Peer-reviewed publication | 2 |
+| National hackathon / olympiad winner | 2 |
+| 3+ internships any employer | 1 |
+| GSoC or major open-source contribution | 1 |
+Threshold: cumulative weight ≥ 5 → elite branch. Lower bound = `ipr_p75`. Upper bound uncapped.
+
+*Placement risk:*
+```python
+# Monthly survival curve blend
+for t in [1, 2, 3, 6, 9, 12]:
+    anchored_p(t) = α * ipr_survival(t) + (1-α) * deephit_survival(t)
+# Enforce monotone: anchored_p(t) must be non-decreasing
+final_p6m = anchored_p(6)
+# Surface disagreement if |ipr_survival(6) - deephit_survival(6)| > 0.20
+```
+
+*Uncertainty propagation:*
+Uncertainty features are now **model inputs** (not just band gates):
+`[parse_confidence_mean, parse_confidence_min, ipr_fallback_level, cgpa_was_imputed, institute_match_confidence, layout_complexity_score]`
+These feed the LightGBM heads. Model learns to be conservative when uncertainty is high.
+Band widening rules remain as-is and stack multiplicatively with model output.
+
+*SHAP feature name mapping:*
+```python
+FEATURE_LABELS = {
+    "internship_brand_score": "Internship at top company",
+    "ipr_placement_rate_6m": "Institute placement rate",
+    "cgpa_percentile_in_cohort": "Academic standing vs. peers",
+    "skill_demand_index": "Skills match market demand",
+    "branch_demand_index": "Branch job market demand",
+    ...
+}
+```
+
+**Pre-warm at startup:**
+Add dummy DeepHit call during startup (2.5s one-time cost).
+Add adaptive pacing controller: target 400ms per SSE event; if real computation ≥ 400ms, emit immediately with no sleep. Total pacing budget = 3.5s regardless of compute time.
+
+---
+
+## 7. Salary and Risk Modeling Strategy
+
+**Salary: Quantile-aware, prior-first, elite-aware**
+
+The core failure in the current salary model is that anchoring blends only the median and scales all five percentiles by the same factor. This is wrong. A student at the 85th percentile of their cohort should have their p75–p90 anchored to the institute's p75–p90, not their median scaled up by a single multiplier.
+
+The fix: a pre-trained **student percentile model** (ordinal LightGBM or simple quantile regression) estimates the student's percentile rank within their institute × branch × graduation-year cohort. This model is trained offline on historical alumni data and is part of the bundle. At inference it runs in <5ms.
+
+Then, for each quantile q, the blending weight is highest when q is near the student's predicted percentile. A student at the 85th percentile gets their p75–p90 blend heavily from the IPR (real outcomes), while their p10–p25 blend comes mostly from the raw model. This preserves within-institute dispersion correctly.
+
+For L3–L5 fallback cases (where IPR data is sparse), the quantile model cannot be anchored reliably and the LightGBM residual prediction takes over. The salary band widens proportionally.
+
+For the elite branch, `lower_bound = ipr_p75` is the floor. No ceiling applies. Display: "This profile may reach ₹X–₹Y based on top-tier profiles at this institute."
+
+**Placement risk: survival-curve blend, monotone-enforced**
+
+Replace the single `placement_rate_6m` blend with a monthly survival curve blend. The IPR stores {3m, 6m, 9m, 12m} placement rates (already present); monotonic interpolation fills months 1, 2, 4, 5, 7, 8, 10, 11. DeepHit outputs a 13-point monthly survival curve. Blend each point with the corresponding IPR curve point using dynamic α. The blended curve is guaranteed monotone by post-processing (Isotonic regression on the blended values).
+
+This captures institute-specific hazard shapes: an institute that places 80% within 3 months has a dramatically different risk profile than one that places 80% by 12 months, even if the final 12-month rate is the same. The current architecture cannot distinguish these.
+
+CRC threshold: set default FNR ≤ 0.10 for the high-risk classification. Expose as configurable parameter. Document in lender admin panel.
+
+---
+
+## 8. Parsing and Extraction Strategy
+
+**Core principle: Parse-then-verify, not parse-and-trust.**
+
+The LLM or heuristic parser produces a first-pass profile. The cross-field consistency validator then audits it. The confidence assignment system scores each field based on four independent signals. The result is a profile where confidence reflects actual extraction quality, not just presence.
+
+**Zone-constrained extraction (new):**
+Section headers are detected first. Fields are extracted within their expected zones. Violation of zone constraints reduces confidence. No zone detected → uniform –0.2 on all confidences.
+
+**Multi-evidence name extraction (new):**
+Three strategies must agree before high confidence is assigned. Font-size signal is the most reliable for creative templates. Contact-block proximity is the most reliable for plain templates. NER catches formal English names. When all three agree → confidence 0.90+. Two agree → confidence 0.70. One → confidence 0.40. Zero → confidence 0.0, amber badge, inline edit.
+
+**DBSCAN layout detection (upgrade):**
+Replace 2-means with DBSCAN (ε=25px, min_samples=5) on word `(x0, x1)` coordinate pairs. Supports 1, 2, and 3-column layouts. Narrow sidebar correctly isolated as its own cluster. For overlapping x-ranges (layout=complex), pass full text to LLM with layout hint.
+
+**OCR path (new):**
+`image_heavy = True` → async Tesseract call → emit `scanning_document` SSE event → merge OCR text when ready → continue with parser cascade. If OCR text < 200 chars → "Paste text" fallback. OCR adds 4–8s for scanned documents; this is honest, visible, and acceptable.
+
+**Scanned PDF graceful path (new):**
+The `rejected` SSE event for image-heavy documents is replaced with `scanning_document` → OCR → continue. Rejection only occurs if OCR fails to produce usable text.
+
+---
+
+## 9. Feature Usage Strategy Across the Full Feature Set
+
+**Feature taxonomy and usage by model component:**
+
+**Group A — Academic strength** (6 features)
+`cgpa_normalised`, `cgpa_percentile_in_cohort` (from IPR quantiles), `has_backlog`, `academic_consistency_score`, `degree_year_remaining`, `graduation_recency_months`.
+Usage: all feed the student-percentile model and both LightGBM heads. `cgpa_percentile_in_cohort` is far stronger than raw CGPA and must be computed whenever IPR has CGPA distribution data. Without it, use raw CGPA normalised to [0,1].
+
+**Group B — Institution context** (8 features)
+`ipr_placement_rate_3m/6m/12m`, `ipr_log_p50_salary`, `ipr_iqr_salary`, `ipr_sample_size`, `ipr_fallback_level_encoded`, `ipr_data_quality_encoded`.
+Usage: placement rates feed the placement risk model as explicit inputs. `ipr_log_p50_salary` feeds the salary model anchor. `ipr_sample_size` feeds the dynamic α computation. All eight are pre-loaded; zero inference cost.
+
+**Group C — Programme and branch context** (4 features)
+`degree_type_encoded`, `branch_demand_index`, `branch_placement_rate_relative_to_institute_mean`, `branch_salary_relative_to_degree_median`.
+Usage: these distinguish B.Tech CS from B.Tech Civil at the same institute. Currently underused. `branch_demand_index` should be explicitly included in the feature vector and verified in the SHAP audit.
+
+**Group D — Market demand** (5 features)
+`skill_demand_index`, `sector_hiring_trend`, `city_job_density`, `macro_index`, `pri_current`.
+Usage: all pre-computed offline and cached at startup. Represent the market environment that affects all students simultaneously. Important for temporal calibration (a 2020 cohort vs. 2024 cohort may have identical profiles but different placement rates due to macro conditions).
+
+**Group E — Internship and project strength** (8 features)
+`internship_count`, `internship_total_months`, `internship_brand_score`, `internship_relevance_score`, `project_count`, `project_complexity_score`, `has_open_source_contribution`, `has_ppo_indicator`.
+Usage: `internship_brand_score` and `has_ppo_indicator` are the strongest individual features in this group. Brand score should be computed from a pre-loaded 10k-company tier dictionary. `has_ppo_indicator` requires the parser to detect "Pre-Placement Offer" or "PPO" keywords.
+
+**Group F — Resume structure quality** (4 features)
+`resume_section_count`, `resume_completeness_score`, `total_word_count`, `formatting_quality_score`.
+Usage: weak predictors individually but capture systematic preparation differences. Include in model; check SHAP weight in audit. If <3% combined weight, investigate re-encoding.
+
+**Group G — Behavioural / real-time signals** (4 features)
+`job_portal_activity_score`, `interview_pipeline_progress`, `days_since_resume_update`, `skill_up_event_count`.
+Usage: default to zero when unavailable (standard case). When available, they are among the strongest near-term predictors. Architecture already handles this; confirm zero-default is correct imputation.
+
+**Group H — Historical outcome priors** (3 features)
+`lender_portfolio_default_rate_for_cohort`, `prior_batch_placement_consistency`, `sector_npa_rate`.
+Usage: lender-specific. Feed the risk model. Available in `portfolio.py`.
+
+**Group I — Uncertainty and data quality** (8 features, new dual role)
+`parse_confidence_mean`, `parse_confidence_min`, `ipr_fallback_level`, `cgpa_was_imputed`, `institute_match_confidence`, `elite_outlier_flag`, `layout_complexity_score`, `ocr_required`.
+Usage: **two roles now**: (1) gate output band width as before, (2) feed directly to LightGBM model heads as inputs. Model learns to be appropriately conservative when extraction quality is low.
+
+**Interaction terms to add explicitly:**
+1. `cgpa_percentile_in_cohort × ipr_placement_rate_6m` — above-average student at strong-placing institute
+2. `internship_brand_score × branch_demand_index` — prestigious internship in hot sector
+3. `skill_demand_index × graduation_recency_months` — fresh skills in rising market
+
+**SHAP audit requirement:**
+After training, compute grouped SHAP importance by feature family. If any family contributes <3% of total |SHAP| weight, investigate. Log this in `/api/health` as a `feature_group_shap` field.
+
+---
+
+## 10. Latency, Caching, and Offline Precomputation Plan
+
+**What is precomputed offline (one-time or nightly):**
+
+| Asset | When | Output |
+|---|---|---|
+| NIRF placement report scraper | One-time before demo | 800+ IPR entries, `data_quality: "inferred"` |
+| Monthly survival curve interpolation for each IPR entry | After scraper | {1m..12m} placement rates per institute × branch |
+| Student percentile ordinal model | Training run | Bundled in `bundle.joblib` |
+| SHAP background dataset (IPR-calibrated) | After IPR expansion | 200 rows per bundle version |
+| Company tier lookup dictionary | One-time | 10k companies → {Tier 1, 2, 3} |
+| Skill demand index table | Weekly update | 2k skills × 6 cities × quarter |
+| Semantic zone header vocabulary | One-time | 80+ section header variants |
+| Cross-field consistency rule compiled regex | At startup | Negligible |
+
+**What is loaded at server startup (in-memory):**
+
+| Asset | Size | Load time |
+|---|---|---|
+| IPR dict (expanded) | ~5 MB | 200ms |
+| bundle.joblib (LightGBM × 3, ordinal, CQR, calibrators, SHAP background, DeepHit) | ~12 MB | 2s |
+| DeepHit dummy warm call | — | 2.5s (one-time) |
+| Company tier dict | ~2 MB | 50ms |
+| Skill demand index | ~1 MB | 20ms |
+| Alias map + header vocabulary | ~500 KB | 10ms |
+| Bandit state | ~100 KB | 5ms |
+| **Total startup time** | | **~7s** |
+
+**Critical path latency targets (warm):**
+
+| Stage | Target |
+|---|---|
+| Validity gate v2 | 40ms |
+| DBSCAN layout detection | 10ms |
+| PDF text extraction | 40ms/page |
+| Async OCR (exception path) | 4–8s (non-blocking) |
+| LLM parse (if used) | 1.5–4s |
+| Heuristic parse | 15ms |
+| Name disambiguation | 10ms |
+| Cross-field validator | 5ms |
+| Semantic zone detection | 5ms |
+| IPR lookup v2 | 1ms |
+| Student percentile model | 5ms |
+| LightGBM × 3 + CQR + ordinal | 35ms |
+| Survival curve blend | 5ms |
+| Quantile-aware anchoring | 10ms |
+| SHAP top-5 | 300ms |
+| Bandit lookup | 1ms |
+| **Total compute (no LLM)** | **~430ms warm** |
+
+**Adaptive pacing controller:**
+```python
+PACE_TARGET = 0.40  # seconds per SSE event
+remaining_budget = 3.5  # total pacing budget in seconds
+for event in events:
+    stage_start = time.time()
+    yield event
+    stage_duration = time.time() - stage_start
+    sleep_needed = max(0, PACE_TARGET - stage_duration)
+    sleep_needed = min(sleep_needed, remaining_budget)
+    remaining_budget -= sleep_needed
+    await asyncio.sleep(sleep_needed)
+```
+This ensures total pacing budget = 3.5s regardless of whether individual stages are slow or fast.
+
+---
+
+## 11. Judge-Facing Live Inference Flow
+
+**Step 0 — Upload (instant)**
+> `📄 Received: candidate_resume.pdf  (147 KB · 2 pages)`
+
+**Step 1 — Validity check (bullets at 120ms intervals)**
+> `🔍 Checking document type...`
+> `  ✓ PDF format confirmed`
+> `  ✓ Contact info detected — email and phone`
+> `  ✓ Section headers found — Education, Experience, Projects, Skills`
+> `  ✓ Career timeline — 4 date ranges detected`
+> `  ✓ Skill keywords — 14 terms detected`
+> `  ✓ No academic-document patterns (not a report)`
+> `✅ This looks like a resume  (confidence 93%)`
+
+If rejected:
+> `❌ This does not appear to be a resume.`
+> `  Evidence: No contact info found · Large continuous prose blocks (ratio 0.62) · Academic vocabulary detected ("Introduction", "References")`
+> `  [Upload a different file]  [Enter profile details manually]`
+
+**Step 2 — Layout analysis (100ms paced)**
+> `📐 Analysing document structure...`
+> `  ✓ 2 pages`
+> `  ⚠ Two-column layout detected — reading left column first, then right`
+
+If scanned:
+> `🔬 Scanned document detected — applying OCR (a few extra seconds)...`
+
+**Step 3 — Field extraction (300ms intervals)**
+> `📄 Reading resume content...`
+> `  ✓ Name: Priya Sharma  [confidence ████▓ 91%]`
+> `  ✓ Institute: IIIT Allahabad  [confidence █████ 96%] — matched in placement registry`
+> `  ✓ Degree: B.Tech Computer Science, 2025  [confidence █████ 93%]`
+> `  ✓ CGPA: 8.7 / 10  [confidence ████░ 81%]`
+> `  ✓ Internships: 2 — Flipkart (3m) · Razorpay (2m)  [confidence ████░ 79%]`
+> `  ✓ Skills: Python · SQL · Machine Learning · Django · AWS  [confidence █████ 88%]`
+> `  ✓ Certifications: AWS Solutions Architect  [confidence █████ 92%]`
+
+For amber-confidence fields:
+> `  ⚠ CGPA: 8.7 / 10  [confidence ██░░░ 46%] — found outside Education section · click to verify`
+
+**Step 4 — Institute context card (fires as soon as IPR lookup completes)**
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  📊  IIIT Allahabad  ·  B.Tech Computer Science                    │
+│  Source: IPR Level 1 — institute-specific historical data          │
+│  Based on 287 students  ·  Batches 2022–2024                       │
+│                                                                    │
+│  Placement rate:  3 months: 62%   6 months: 84%   12 months: 96%  │
+│  Salary range:    ₹10L – ₹45L   Median: ₹19L                      │
+│  Anchor weight:   82%  (large sample, high-quality data)           │
+│  Top recruiters:  Microsoft  ·  Flipkart  ·  Goldman Sachs         │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+If IPR is L4/L5:
+> `⚠ Institute not in our database — using national estimates for Tier-3 CS engineering. These are less precise.`
+
+**Step 5 — Profile vs. cohort comparison (gauges animate in)**
+> `📊 Comparing against institute cohort...`
+> `  CGPA 8.7  →  top 22% in IIIT Allahabad CSE  ████████░░`
+> `  Internships: 2  →  above cohort median of 1.3  ███████░░░`
+> `  Skill match: 5 of 6 top Data Engineering skills (NCR)  ████████░░`
+> `  Predicted percentile within cohort: 72nd`
+
+**Step 6 — Survival curve animation**
+> `📈 Computing your placement timeline...`
+[Animated survival curve draws from left to right, showing institute curve as dotted reference line]
+
+**Step 7 — Final result card (animated reveal)**
+```
+┌──────────────────────────────────────────────────────────────┐
+│  PLACEMENT PROBABILITY                                       │
+│  3 months:  62%    6 months:  83%    12 months:  96%         │
+│  Risk tier:  LOW                                             │
+│  [Institute curve shown as dotted reference: 62%, 84%, 96%] │
+├──────────────────────────────────────────────────────────────┤
+│  EXPECTED SALARY                                             │
+│  ₹17L – ₹27L   (most likely: ₹21L)                          │
+│  Anchored to 72nd percentile of IIIT Allahabad CSE cohort   │
+├──────────────────────────────────────────────────────────────┤
+│  WHY THIS ESTIMATE                                           │
+│  ↑ +14%  Institute placement rate (84% at 6 months)         │
+│  ↑  +9%  Internship at top company (Flipkart)               │
+│  ↑  +7%  Skills match market demand (AWS, ML in NCR)        │
+│  ↓  -5%  Academic standing below top decile for cohort      │
+├──────────────────────────────────────────────────────────────┤
+│  💡 BEST NEXT ACTION                                         │
+│  Mock interview session → estimated +6% placement           │
+│  probability based on similar IIIT Allahabad profiles       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+If IPR vs. model disagree by > 0.20:
+> `ℹ️ Model estimated 64% placement at 6 months. Institute historical rate is 84%. The difference suggests this profile is weaker than the typical IIIT Allahabad CSE graduate — despite strong individual signals.`
+
+If prediction confidence is overall low:
+> `⚠ Prediction quality is moderate due to limited data for this institute and branch combination. Range shown is wider than usual.`
+
+---
+
+## 12. Validation Plan
+
+**Before demo day, run these eight checks in order:**
+
+**Check 1 — Non-resume rejection suite (30 documents)**
+Documents: 10 project reports, 10 marksheets, 5 academic CVs with "references" section, 5 brochures. Expected: all 30 rejected with `p_resume < 0.40` or classifier vote = reject. Acceptable failure rate: 0/30 (zero false accepts for marksheets/brochures; max 2/5 false accepts for academic CVs which are structurally similar to resumes).
+
+**Check 2 — Creative resume acceptance suite (10 documents)**
+Documents: 5 Canva two-column templates, 3 Novoresume templates with icon-based section headers, 2 resume.io templates with sidebar. Expected: all 10 accepted with `p_resume ≥ 0.70`. If any rejected, identify which signals are over-penalising and adjust weights.
+
+**Check 3 — Field extraction accuracy on 20 real resumes**
+Span: 5 standard single-column, 5 Canva two-column, 5 no-section-headers, 5 scanned (via OCR). Manual ground truth for: name, institute, degree, branch, CGPA, graduation year, internship companies. Acceptable misassignment rate: < 5% of fields. Amber badge accuracy: any field that is wrong should have confidence < 0.70.
+
+**Check 4 — IPR lookup precision on 15 intentional typos**
+Test alias map + rapidfuzz against: "IITA Alahabad", "IIT Mumbay", "National Insitute of Tech Surathkal", etc. All 15 should resolve correctly. Also test the disambiguation trigger: send 5 queries with fuzzy score 72–80 and verify the "Did you mean?" panel appears.
+
+**Check 5 — Salary monotonicity and coverage**
+For each L1 institute, generate 10 synthetic profiles spanning CGPA percentiles 10–100. Check: (1) salary p25–p75 is monotonically increasing across percentiles, (2) no inversions after anchoring, (3) for elite profiles (weight ≥ 5), lower bound ≥ `ipr_p75`.
+
+**Check 6 — Survival curve calibration**
+On synthetic holdout set of 1,000 students per institute cluster, compare anchored `p_6m` to actual 6m placement rate. Expected: ECE < 0.08. Check that the blended curve is always monotone (p_3m ≤ p_6m ≤ p_12m).
+
+**Check 7 — Cold-start latency after idle**
+After 15 minutes of server inactivity, send a resume. Measure wall-clock from POST to first SSE event. Target: < 3 seconds (model bundle should stay in memory; health-check cron ping every 10 minutes prevents process recycling on Render/Fly.io).
+
+**Check 8 — SHAP group importance audit**
+Run SHAP on 500 synthetic profiles. Compute `|SHAP|` by feature group. Verify: no single group > 50% of total weight (model is not collapsed to CGPA + institute alone). Verify: Group E (internship/project) > 15%. Verify: Group I (uncertainty) has non-zero contribution when low-confidence profiles are in the test set.
+
+---
+
+## 13. Final One-Paragraph Recommendation
+
+The optimal next version of CareerSight retains its correct architectural skeleton — IPR-anchored scoring, streaming SSE forensic discovery, no-hallucination policy, validity gate, and lightweight inference — and applies eight targeted improvements that address the specific failure modes that survive a well-designed v1: the validity gate gains two new negative signals (academic vocabulary proportion and continuous prose ratio) plus a 50-feature logistic classifier for the ambiguous band, eliminating false-accepts on formatted project reports while preserving acceptance of creative Canva templates; the column detector is upgraded from 1D 2-means to DBSCAN on `(x0, x1)` coordinates, correctly isolating narrow sidebars and three-column layouts without a minimum-cluster-size constraint; a post-parse cross-field consistency validator running in 5ms catches misassignment (correct text, wrong field label) without requiring re-extraction; scanned PDFs are routed to an async OCR path with a visible "Scanning document" status message rather than silently producing an empty profile; the IPR is expanded from 21 to 800+ institutes via a one-time NIRF placement report scraper with `data_quality: "inferred"` tags; salary anchoring is redesigned as quantile-aware blending where each of the five salary quantiles is independently anchored to the corresponding IPR percentile weighted by proximity to the student's predicted cohort percentile — preventing the current behaviour where all percentiles are scaled by a single median multiplier, which systematically collapses top-quartile students toward the average; placement risk anchoring is extended from a single `placement_rate_6m` blend to a full monthly survival curve blend, capturing whether an institute places its graduates early (before 3m) or late (after 9m); and SHAP feature names are mapped to plain-language driver phrases, uncertainty features are promoted to direct model inputs, and DeepHit is pre-warmed at server startup — all of which together keep worst-case warm inference under 450ms, preserve the streaming discovery UX that judges find compelling, and ensure that every prediction is transparently rooted in real institutional outcome data with honest uncertainty surfaced at every step.
+
+
+
+
+You are a senior ML architect, document intelligence expert, and hackathon judge.
+
+You will be given a meta-synthesis of multiple critiques of our resume-scoring and data-driven risk-assessment architecture. Your job is not to praise the synthesis. Your job is to audit it like a strict reviewer, identify what is truly useful, what is wrong, what is incomplete, what is over-engineered, and what additional improvements could materially improve the system.
+
+Treat every claim as independently testable.
+Do not accept a claim just because it sounds advanced.
+Do not reject a claim just because it sounds simple.
+Do not optimize for novelty alone.
+Do not optimize for theoretical elegance if it hurts latency, robustness, or judge trust.
+Do not anchor on any specific institute, college, or example institution.
+Do not focus on a single proxy signal.
+Reason across the entire feature space and the entire pipeline.
+
+========================
+SYSTEM CONTEXT
+========================
+
+We are building a resume intelligence pipeline for a hackathon demo that:
+1. checks whether an uploaded PDF is actually a resume,
+2. extracts identity and profile fields,
+3. resolves institution / program / branch context,
+4. predicts placement probability and salary range,
+5. explains its reasoning,
+6. streams findings step by step during inference,
+7. stays low-latency enough for a live judge demo.
+
+The current architecture already includes:
+- a resume validity gate,
+- layout-aware parsing,
+- a parser cascade with confidence scores,
+- institution/program outcome priors,
+- anchored salary and risk scoring,
+- explainability,
+- and streaming judge-facing output.
+
+The meta-synthesis you are about to review claims that the current design is still weak in areas such as:
+- wrong identity extraction,
+- wrong field assignment,
+- weak or missing validity rejection,
+- missed or misread institution/program/branch,
+- salary estimates collapsing toward generic values,
+- failure to preserve within-institution dispersion,
+- poor handling of elite outliers,
+- inadequate temporal modeling of placement risk,
+- brittle multi-column parsing,
+- false acceptance of non-resumes,
+- uncertainty not being propagated strongly enough,
+- judge UX not exposing enough evidence,
+- and over-reliance on proxies instead of real outcome data.
+
+Your job is to verify which of those concerns are real, which are overstated, which are redundant, and which are missing important nuance.
+
+========================
+THE META-SYNTHESIS YOU ARE REVIEWING
+========================
+
+You will receive a synthesis that already classifies claims as correct / partially correct / incorrect / unsupported / missing but important.
+
+Your task is to review that synthesis itself and decide:
+
+- Which of its judgments are correct.
+- Which judgments are too optimistic or too pessimistic.
+- Which judgments miss an important tradeoff.
+- Which proposed improvements are actually worth implementing.
+- Which proposed improvements are too expensive, too brittle, or too hard to explain.
+- Which new improvements are still missing entirely.
+
+You must not assume the synthesis is complete.
+You must not assume the synthesis is the final answer.
+You must not assume an improvement helps simply because it sounds “research-grade.”
+
+========================
+WHAT YOU MUST ANALYZE
+========================
+
+A. Parsing and identity extraction
+- Does the system reliably identify the person’s name when the name is not in a standard top-left header position?
+- Does it reliably locate the institution, degree, branch, and graduation year when they appear in unusual places?
+- Does it prevent wrong-field assignment when the text is present but attached to the wrong label?
+- Does it handle multi-column, sidebar, decorative, or table-heavy layouts?
+- Does it handle scanned or image-only PDFs without silently failing?
+- Does it detect when its own extraction confidence is too low?
+
+B. Validity gate
+- Does the system truly reject non-resume documents, or only most of them?
+- What kinds of false accepts are still possible?
+- What kinds of false rejects are still possible?
+- Would a lightweight ML classifier help beyond rules?
+- Where should it sit in the pipeline?
+- What is the best compromise between strictness, recall, and judge experience?
+
+C. Institution / program / branch priors
+- Is the current prior structure granular enough?
+- Does it preserve actual cohort distribution rather than only a mean or median?
+- Does it model the right temporal shape of placement outcomes?
+- Does it use sample size / data quality appropriately?
+- Does it avoid over-reliance on generic reputation proxies?
+- Does it know when to widen uncertainty due to sparse data?
+- Does it need a better fallback hierarchy?
+
+D. Salary prediction
+- Is the current salary anchor mathematically sound?
+- Does it incorrectly flatten within-institute dispersion?
+- Does a single anchor multiplier distort p10/p50/p90 for elite or average candidates?
+- Would a student-percentile model or quantile-aware anchoring help?
+- Should the model output a range, a median, or both?
+- How should rare high-package outliers be handled without hallucination?
+- What is the minimum complexity needed to fix the current salary failure mode?
+
+E. Placement-risk prediction
+- Is the current risk model calibrated enough?
+- Does it capture temporal hazard shape or only a single probability point?
+- Should it use a monthly survival curve instead of only a 3m/6m/12m blend?
+- Should uncertainty from parsing / priors affect the risk output directly?
+- Is Beta calibration sufficient, or is there a better alternative that is still simple and fast?
+- Does the current output explain risk in a way judges can understand?
+
+F. Feature usage
+We have a large feature set, around 46+ features.
+You must reason over the whole feature space and not collapse to only a few obvious signals.
+
+You should assess whether the improved design actually uses:
+- academic strength,
+- institution context,
+- branch / program context,
+- market demand,
+- internship and project strength,
+- resume structure quality,
+- behavioral / real-time signals,
+- historical outcome priors,
+- uncertainty / data-quality signals.
+
+You must check whether the synthesis correctly warns about feature collapse or whether it overstates the problem.
+
+G. Live demo UX and explainability
+- Does the current streaming flow show enough evidence?
+- Does it reveal findings in a believable sequence?
+- Does it help judges trust the output?
+- Does it expose confidence and ambiguity clearly?
+- Does it show why a salary or risk value changed?
+- Would bounding-box overlays, field-by-field streaming, percentile gauges, or cohort comparison cards materially help?
+- Which UX additions are useful and which are decorative?
+
+H. Latency and deployment realism
+- Which proposed improvements fit the hackathon constraint?
+- Which improvements are too slow for a live demo?
+- Which improvements should be offline only?
+- Which improvements are worth adding even if they add a small amount of latency?
+- Which improvements should be rejected because they are too complex or brittle?
+
+I. Validation and self-critique
+You must not only propose improvements.
+You must validate them.
+
+For every major proposed improvement, answer:
+- What exact problem it fixes.
+- Why it should work.
+- What failure mode remains.
+- How it affects latency.
+- How it affects judge trust.
+- How hard it is to implement.
+- Whether it should be in the hackathon version, the production version, both, or neither.
+
+========================
+WHAT THE SYNTHESIS CLAIMS
+========================
+
+The synthesis argues that the biggest remaining issues are:
+
+- misassignment of names and fields,
+- brittle parsing on unusual layouts,
+- false accepts of non-resume PDFs,
+- salary anchoring that collapses within-institute dispersion,
+- underprediction of elite profiles,
+- risk estimation that ignores temporal hazard shape,
+- missing user confirmation for ambiguous institution matches,
+- insufficient uncertainty propagation,
+- and weak judge-facing evidence presentation.
+
+It proposes improvements such as:
+- section-aware parsing,
+- multi-strategy field extraction,
+- stronger validity detection,
+- OCR fallback for scanned PDFs,
+- better institution-program priors,
+- quantile-aware salary anchoring,
+- student-percentile modeling,
+- monthly survival-curve placement modeling,
+- DBSCAN or better layout clustering,
+- cross-field consistency validation,
+- confidence as a first-class input,
+- plain-language feature labels for SHAP,
+- and step-by-step forensic streaming UI.
+
+Your task is to determine:
+1. Which of these are truly high-impact.
+2. Which are redundant with the current system.
+3. Which are fragile or overcomplicated.
+4. Which are still missing important pieces.
+
+========================
+WHAT YOU SHOULD PRODUCE
+========================
+
+You must return a rigorously argued audit and redesign plan.
+
+Structure your answer exactly as follows:
+
+1. Executive verdict
+2. Claim-by-claim audit of the meta-synthesis
+3. What is correct and genuinely useful
+4. What is overstated, weak, or wrong
+5. What is still missing
+6. Recommended improvements, prioritized
+7. Improvements that should be in the hackathon build
+8. Improvements that should be deferred to production
+9. What should be removed or simplified
+10. Validation plan for the revised design
+11. Judge-facing demo flow improvements
+12. Final next-version architecture in one paragraph
+
+========================
+DECISION RULES
+========================
+
+When deciding whether an improvement is worth it, use these criteria:
+
+- accuracy gain,
+- judge trust gain,
+- latency cost,
+- implementation complexity,
+- robustness gain,
+- whether it prevents silent failure,
+- whether it reduces hallucination,
+- whether it improves calibration,
+- whether it helps on real malformed resumes,
+- whether it helps on elite outlier profiles,
+- whether it generalizes beyond a single example.
+
+If two ideas solve the same problem, choose the simpler one unless the more complex one clearly wins on accuracy and reliability.
+If a proposed fix depends on unavailable training data, say so.
+If a proposed fix only works with good OCR or good PDFs, say so.
+If a proposed fix makes the demo fragile, demote it.
+If a proposed fix sounds impressive but does not materially improve judge trust, reject it.
+
+========================
+IMPORTANT THINGS TO LOOK FOR
+========================
+
+I want you to explicitly inspect whether the synthesis has fully addressed the following failure modes:
+
+- Name extraction from unconventional headers or sidebars.
+- Institution extraction when the institution is written in different wording or embedded in a non-standard section.
+- Wrong-field attachment even when the text is correct.
+- False positives on non-resume PDFs that are structured like resumes.
+- Underprediction of high-achieving profiles due to over-anchoring to medians.
+- Collapse of salary spread because all quantiles are scaled too uniformly.
+- Risk estimates that are accurate on average but wrong for early-vs-late placement shape.
+- User confusion when a field is uncertain but the system still shows a confident answer.
+- Multi-column and scanned document failure modes.
+- Judge-facing UX that is informative rather than theatrical.
+
+========================
+REASONING STYLE
+========================
+
+- Be strict.
+- Be skeptical.
+- Be specific.
+- Be practical.
+- Be opinionated.
+- Do not romanticize complexity.
+- Do not accept every “advanced” idea.
+- Do not reject an idea just because it is simple.
+- Do not rely on one proxy or one ranking signal.
+- Do not over-index on one institution or one example.
+- Do not assume the current parser is correct.
+- Do not assume the current priors are complete.
+- Do not assume the salary model is already calibrated.
+- Do not assume that a streamed bullet point by itself creates trust.
+- Do not assume that more model complexity means more accuracy.
+
+========================
+FINAL EXPECTATION
+========================
+
+At the end, I want a design recommendation that answers:
+
+- What should definitely be changed now?
+- What should be tested before changing?
+- What should be left out because it is too expensive or too brittle?
+- What would give the biggest improvement in one sprint?
+- What would be the best “judge-winning” improvement without blowing up latency?
+- What should the next version of the system be, after incorporating the best validated improvements?
+
+Now audit the meta-synthesis and produce the final redesign recommendation.

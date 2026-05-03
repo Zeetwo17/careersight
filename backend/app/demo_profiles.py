@@ -1,0 +1,111 @@
+"""Pre-built demo profiles used by the live-demo page when no resume is uploaded.
+
+Mirrors the personas referenced in the pitch deck so the on-stage demo lines
+up with the slides — Priya (HIGH risk), Arjun (LOW risk), Meera (MEDIUM).
+"""
+from __future__ import annotations
+
+from .schema import StudentProfile
+
+DEMO_PROFILES: dict[str, StudentProfile] = {
+    # Priya is the deck's slide-7 hero persona. Numbers below are tuned so the
+    # live model lands at ~score 72 / HIGH / P(6m) ~0.51, matching the deck mock.
+    "priya": StudentProfile(
+        name="Priya Sharma",
+        course_type="MBA-Finance",
+        institute_name="Pune Tier-2 B-School",
+        institute_tier=3,
+        region="Tier2",
+        graduation_year=2024,
+        cgpa=6.2,
+        backlogs_count=2,
+        internships=[],
+        certifications=["Excel"],
+        skills=["excel"],
+        github_projects=0,
+        coding_problem_count=0,
+        hackathon_wins=0,
+        leadership_roles_count=0,
+        paper_publications=0,
+        extracurriculars_count=0,
+        languages_known=1,
+        portal_activity_30d=1,
+        interview_invites_count=0,
+        salary_expectation_lpa=5.5,
+    ),
+    "arjun": StudentProfile(
+        name="Arjun Iyer",
+        course_type="BTech-CS",
+        institute_name="IIT Madras",  # NIRF 2024 rank 1, score 89.46
+
+        institute_tier=1,
+        region="Metro",
+        graduation_year=2024,
+        cgpa=8.6,
+        backlogs_count=0,
+        internships=[
+            {"company": "Google", "duration_months": 4, "is_top_tier": True, "relevance": 0.95},
+            {"company": "Razorpay", "duration_months": 3, "is_top_tier": True, "relevance": 0.85},
+        ],
+        certifications=["AWS", "Kubernetes", "TensorFlow"],
+        skills=["python", "go", "kubernetes", "aws", "react"],
+        github_projects=18,
+        coding_problem_count=620,
+        hackathon_wins=2,
+        leadership_roles_count=2,
+        paper_publications=1,
+        extracurriculars_count=4,
+        languages_known=3,
+        portal_activity_30d=42,
+        interview_invites_count=8,
+        salary_expectation_lpa=22.0,
+    ),
+    "meera": StudentProfile(
+        name="Meera Krishnan",
+        course_type="BTech-ECE",
+        institute_name="NIT Trichy",
+        institute_tier=2,
+        region="Metro",
+        graduation_year=2024,
+        cgpa=7.8,
+        backlogs_count=0,
+        internships=[
+            {"company": "Wipro", "duration_months": 2, "is_top_tier": False, "relevance": 0.65},
+        ],
+        certifications=["Verilog", "MATLAB"],
+        skills=["c++", "verilog", "matlab", "python"],
+        github_projects=4,
+        coding_problem_count=180,
+        hackathon_wins=0,
+        leadership_roles_count=1,
+        paper_publications=0,
+        extracurriculars_count=3,
+        languages_known=2,
+        portal_activity_30d=18,
+        interview_invites_count=2,
+        salary_expectation_lpa=8.0,
+    ),
+    "rahul": StudentProfile(
+        name="Rahul Verma",
+        course_type="BTech-Mech",
+        institute_name="Jaipur Engineering College",
+        institute_tier=3,
+        region="Tier3",
+        graduation_year=2024,
+        cgpa=6.4,
+        backlogs_count=2,
+        internships=[],
+        certifications=[],
+        skills=["autocad", "solidworks"],
+        github_projects=0,
+        coding_problem_count=0,
+        hackathon_wins=0,
+        leadership_roles_count=0,
+        paper_publications=0,
+        extracurriculars_count=1,
+        languages_known=2,
+        portal_activity_30d=2,
+        interview_invites_count=0,
+        salary_expectation_lpa=5.0,
+    ),
+}
