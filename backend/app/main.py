@@ -80,15 +80,15 @@ app = FastAPI(
 
 
 def _warm_bundle():
-    """Load bundle + run one dummy SHAP call so LightGBM's native SHAP
-    C++ code is JIT-warmed before the first real user request."""
+    """Load bundle + run one dummy SHAP call so the TreeExplainer is
+    JIT-warmed before the first real user request."""
     import numpy as _np
     from .predict import _bundle
     try:
         b = _bundle()
         n_feats = len(b["feature_names"])
         dummy = _np.zeros((1, n_feats), dtype=_np.float64)
-        b["classifiers"]["placed_6m"].booster_.predict(dummy, pred_contrib=True)
+        b["explainer"].shap_values(dummy, approximate=True, check_additivity=False)
     except Exception:
         pass
 
