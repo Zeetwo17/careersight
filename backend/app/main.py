@@ -170,37 +170,6 @@ app.add_middleware(
 )
 
 
-@app.get("/api/debug")
-def debug_info() -> dict:
-    """Temporary debug endpoint — shows bundle file status and import checks."""
-    from pathlib import Path
-    import traceback as _tb
-    bundle_path = Path(__file__).resolve().parents[2] / "data" / "models" / "bundle.joblib"
-    info: dict = {
-        "bundle_path": str(bundle_path),
-        "bundle_exists": bundle_path.exists(),
-        "bundle_size_bytes": bundle_path.stat().st_size if bundle_path.exists() else None,
-        "numba_in_sys_modules": "numba" in sys.modules,
-        "shap_in_sys_modules": "shap" in sys.modules,
-        "deploy_version": "v3_numba_metapath",
-    }
-    # Check if it's an LFS pointer (they're small text files ~130 bytes)
-    if bundle_path.exists() and bundle_path.stat().st_size < 500:
-        info["bundle_content_preview"] = bundle_path.read_text(errors="replace")[:200]
-        info["likely_lfs_pointer"] = True
-    else:
-        info["likely_lfs_pointer"] = False
-    # Try loading
-    try:
-        import joblib
-        b = joblib.load(bundle_path)
-        info["bundle_keys"] = list(b.keys())[:20]
-        info["load_ok"] = True
-    except Exception as exc:
-        info["load_ok"] = False
-        info["load_error"] = str(exc)
-        info["load_traceback"] = _tb.format_exc()
-    return info
 
 
 class ProfileBody(BaseModel):
