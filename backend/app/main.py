@@ -50,34 +50,32 @@ except (ImportError, OSError):
     for _m in ("torchtuples", "pycox", "pycox.models"):
         sys.modules.setdefault(_m, types.ModuleType(_m))
 
-# shap — the bundle contains a shap.TreeExplainer but we use perturbation-
-# based importance at inference.  We only need a hollow class so joblib can
-# unpickle the object; we never call any method on it.
+# shap — the bundle contains a shap.TreeExplainer (which internally holds
+# TreeEnsemble etc.) but we use perturbation-based importance at inference.
+# We need a catch-all stub so joblib can unpickle every shap class the
+# pickle stream references — TreeExplainer, TreeEnsemble, etc.
 try:
     import shap  # noqa: F401
 except ImportError:
-    _shap = types.ModuleType("shap")
-    _shap_ex = types.ModuleType("shap.explainers")
-    _shap_tree = types.ModuleType("shap.explainers._tree")
-
-    class _DummyExplainer:
+    class _Hollow:
         """Accepts any pickle state — we never call methods on it."""
         def __init__(self, *a, **kw): pass
         def __setstate__(self, state):
             if isinstance(state, dict):
                 self.__dict__.update(state)
+        def __repr__(self):
+            return "<shap stub>"
 
-    _shap.TreeExplainer = _DummyExplainer
-    _shap.Explainer = _DummyExplainer
-    _shap_ex.TreeExplainer = _DummyExplainer
-    _shap_tree.TreeExplainer = _DummyExplainer
+    class _CatchAllModule(types.ModuleType):
+        """Returns _Hollow for ANY attribute lookup so pickle.find_class
+        resolves every shap-internal class (TreeExplainer, TreeEnsemble, …)."""
+        def __getattr__(self, name):
+            return _Hollow
 
-    sys.modules["shap"] = _shap
-    sys.modules["shap.explainers"] = _shap_ex
-    sys.modules["shap.explainers._tree"] = _shap_tree
-    # shap imports matplotlib; stub that path too if matplotlib is missing
-    for _m in ("shap.plots", "shap.maskers", "shap.utils"):
-        sys.modules.setdefault(_m, types.ModuleType(_m))
+    for _m in ("shap", "shap.explainers", "shap.explainers._tree",
+               "shap.plots", "shap.maskers", "shap.utils",
+               "shap.utils._exceptions", "shap.links"):
+        sys.modules[_m] = _CatchAllModule(_m)
 
 # Load .env from the project root so GEMINI_API_KEY (and any other secrets)
 # are available in os.environ before any module imports them.
