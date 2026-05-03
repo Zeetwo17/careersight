@@ -77,6 +77,21 @@ app = FastAPI(
     description="AI placement-risk intelligence for education lenders",
     version="1.0.0",
 )
+
+
+@app.on_event("startup")
+async def _preload_bundle():
+    """Eagerly load the model bundle at server startup so the first user
+    request doesn't pay the joblib.load() cost (~1-2s)."""
+    import asyncio as _asyncio
+    from .predict import _bundle
+    loop = _asyncio.get_event_loop()
+    try:
+        await loop.run_in_executor(None, _bundle)
+    except Exception:
+        pass  # FileNotFoundError surfaced properly on first /api/health call
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

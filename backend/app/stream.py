@@ -20,6 +20,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from functools import partial
 from typing import AsyncIterator
 
 from .ipr import lookup as ipr_lookup
@@ -160,11 +161,12 @@ async def stream_pdf(pdf_bytes: bytes, *, filename: str | None = None) -> AsyncI
     yield _sse("ipr_card", ipr.to_dict())
     await asyncio.sleep(PACE_SLOW)
 
-    # ---- Stage 4: full scoring (this is the one expensive call) ----
+    # ---- Stage 4: full scoring (CPU-bound — run in thread to keep event loop free) ----
     yield _sse("stage", {"name": "score", "label": "Running placement model + salary anchor..."})
     await asyncio.sleep(PACE_FAST)
     try:
-        result = predict_profile(profile)
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, predict_profile, profile)
     except Exception as exc:
         yield _sse("error", {"stage": "score",
                              "message": f"Scoring failed ({type(exc).__name__})"})
@@ -257,7 +259,8 @@ async def stream_text(text: str) -> AsyncIterator[str]:
 
     yield _sse("stage", {"name": "score", "label": "Running placement model + salary anchor..."})
     await asyncio.sleep(PACE_FAST)
-    result = predict_profile(profile)
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, predict_profile, profile)
     yield _sse("salary_card", {
         "salary_band_lpa": result["salary_band_lpa"],
         "ipr_p50": result["ipr"]["salary_percentiles_lpa"]["p50"],
