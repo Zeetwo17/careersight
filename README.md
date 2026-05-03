@@ -2,7 +2,7 @@
 title: CareerSight
 emoji: "\U0001F393"
 colorFrom: indigo
-colorTo: orange
+colorTo: yellow
 sdk: docker
 app_port: 7860
 ---
