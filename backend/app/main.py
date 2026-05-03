@@ -69,28 +69,51 @@ except ImportError:
     class _CatchAllModule(types.ModuleType):
         """Returns _Hollow for ANY attribute lookup so pickle.find_class
         resolves every shap-internal class (TreeExplainer, TreeEnsemble, …)."""
+        __path__ = []
+        __spec__ = None
+        __loader__ = None
+
         def __getattr__(self, name):
+            if name in ("__path__", "__spec__", "__loader__", "__package__",
+                        "__name__", "__file__"):
+                return super().__getattribute__(name)
             return _Hollow
 
     for _m in ("shap", "shap.explainers", "shap.explainers._tree",
                "shap.plots", "shap.maskers", "shap.utils",
                "shap.utils._exceptions", "shap.links"):
-        sys.modules[_m] = _CatchAllModule(_m)
+        _mod = _CatchAllModule(_m)
+        _mod.__path__ = []
+        _mod.__package__ = _m
+        sys.modules[_m] = _mod
 
 # numba — SHAP's TreeExplainer pickle references numba types.
 # We never call SHAP at inference so a catch-all stub is sufficient.
+# The stub must have __path__ (list) so Python's import machinery can
+# traverse submodules without blowing up on 'type' object is not iterable.
 try:
     import numba  # noqa: F401
 except ImportError:
     class _NumbaModule(types.ModuleType):
+        __path__ = []   # package marker — prevents import machinery TypeError
+        __spec__ = None
+        __loader__ = None
+        __package__ = "numba"
+
         def __getattr__(self, name):
+            if name in ("__path__", "__spec__", "__loader__", "__package__",
+                        "__name__", "__file__"):
+                return super().__getattribute__(name)
             return _Hollow
 
     for _m in ("numba", "numba.core", "numba.core.types",
                "numba.core.types.containers", "numba.np",
                "numba.np.ufunc", "numba.typed", "numba.typed.typeddict",
                "numba.typed.typedlist"):
-        sys.modules[_m] = _NumbaModule(_m)
+        _mod = _NumbaModule(_m)
+        _mod.__path__ = []
+        _mod.__package__ = _m
+        sys.modules[_m] = _mod
 
 # Load .env from the project root so GEMINI_API_KEY (and any other secrets)
 # are available in os.environ before any module imports them.
