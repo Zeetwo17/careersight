@@ -77,6 +77,21 @@ except ImportError:
                "shap.utils._exceptions", "shap.links"):
         sys.modules[_m] = _CatchAllModule(_m)
 
+# numba — SHAP's TreeExplainer pickle references numba types.
+# We never call SHAP at inference so a catch-all stub is sufficient.
+try:
+    import numba  # noqa: F401
+except ImportError:
+    class _NumbaModule(types.ModuleType):
+        def __getattr__(self, name):
+            return _Hollow
+
+    for _m in ("numba", "numba.core", "numba.core.types",
+               "numba.core.types.containers", "numba.np",
+               "numba.np.ufunc", "numba.typed", "numba.typed.typeddict",
+               "numba.typed.typedlist"):
+        sys.modules[_m] = _NumbaModule(_m)
+
 # Load .env from the project root so GEMINI_API_KEY (and any other secrets)
 # are available in os.environ before any module imports them.
 try:
