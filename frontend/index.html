@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CareerSight - AI Education Loan Risk Intelligence</title>
-  <link rel="stylesheet" href="/static/style.css?v=24" />
+  <link rel="stylesheet" href="/static/style.css?v=25" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -197,9 +197,148 @@
         </div>
       </section>
 
+      <!-- Result panel (3-column dashboard mirroring slide 7) -->
+      <!-- This now renders ABOVE the Decision Intelligence Summary so the
+           hero risk metrics (placement @ 3/6/12mo + survival curve) are the
+           first things the user sees once analysis completes. -->
+      <div id="result-panel" class="result-panel hidden">
+
+        <!-- Left rail -->
+        <aside class="rail">
+          <div class="rail-brand">CareerSight</div>
+          <ul class="rail-nav">
+            <li class="rail-active" data-go-tab="demo">
+              <span class="rail-nav-icon">●</span>
+              <span class="rail-nav-text">Risk Dashboard</span>
+              <span class="rail-nav-meta">live</span>
+            </li>
+            <li class="rail-nav-link" data-go-tab="portfolio">
+              <span class="rail-nav-icon">▦</span>
+              <span class="rail-nav-text">Portfolio View</span>
+              <span class="rail-nav-meta">200</span>
+            </li>
+            <li class="rail-nav-link" data-go-tab="pri">
+              <span class="rail-nav-icon">∿</span>
+              <span class="rail-nav-text">PRI Index</span>
+              <span class="rail-nav-meta">13mo</span>
+            </li>
+            <li class="rail-nav-link" data-go-tab="arch">
+              <span class="rail-nav-icon">⚙</span>
+              <span class="rail-nav-text">Architecture</span>
+              <span class="rail-nav-meta">14</span>
+            </li>
+          </ul>
+          <div class="rail-card">
+            <div class="rail-avatar" id="result-avatar">PS</div>
+            <div class="rail-name" id="result-name">—</div>
+            <div class="rail-meta" id="result-meta">—</div>
+          </div>
+
+          <!-- Decision snapshot — populated from result payload -->
+          <div class="rail-stats">
+            <div class="rail-stats-title">DECISION SNAPSHOT</div>
+            <div class="rail-stat-row">
+              <span class="rail-stat-key">Risk band</span>
+              <span class="rail-stat-val" id="rail-risk-band">—</span>
+            </div>
+            <div class="rail-stat-row">
+              <span class="rail-stat-key">Cohort %ile</span>
+              <span class="rail-stat-val" id="rail-cohort-pct">—</span>
+            </div>
+            <div class="rail-stat-row">
+              <span class="rail-stat-key">P(6mo)</span>
+              <span class="rail-stat-val" id="rail-p6m">—</span>
+            </div>
+            <div class="rail-stat-row">
+              <span class="rail-stat-key">Model AUC</span>
+              <span class="rail-stat-val accent">0.864</span>
+            </div>
+            <div class="rail-stat-row">
+              <span class="rail-stat-key">ECE post-cal</span>
+              <span class="rail-stat-val accent">0.027</span>
+            </div>
+            <div class="rail-stat-row">
+              <span class="rail-stat-key">CRC FNR</span>
+              <span class="rail-stat-val">≤ 10%</span>
+            </div>
+          </div>
+
+          <!-- Live indicator -->
+          <div class="rail-live">
+            <span class="rail-live-dot"></span>
+            <span class="rail-live-text">Inference live · 56 ms warm</span>
+          </div>
+        </aside>
+
+        <!-- Center: risk score + survival curve -->
+        <section class="result-main">
+          <div class="result-head">
+            <div>
+              <div class="result-eyebrow">PLACEMENT RISK SCORE</div>
+              <div class="result-tierbar"><span></span><span></span><span></span></div>
+            </div>
+            <div class="result-tier-pill" id="result-tier">—</div>
+            <div class="result-crc">
+              <div class="result-crc-label">CRC FNR ≤</div>
+              <div class="result-crc-val">10%</div>
+            </div>
+          </div>
+
+          <div class="risk-grid">
+            <div class="risk-circle-wrap">
+              <svg viewBox="0 0 120 120" class="risk-circle">
+                <circle cx="60" cy="60" r="52" class="risk-circle-track"></circle>
+                <circle cx="60" cy="60" r="52" class="risk-circle-bar" id="risk-bar"></circle>
+              </svg>
+              <div class="risk-circle-num" id="risk-num">—</div>
+            </div>
+            <div class="risk-stats">
+              <div class="rs"><div class="rs-label">Placement @ 3mo</div><div class="rs-val" id="p-3m">—</div></div>
+              <div class="rs"><div class="rs-label">Placement @ 6mo</div><div class="rs-val" id="p-6m">—</div></div>
+              <div class="rs"><div class="rs-label">Placement @ 12mo</div><div class="rs-val" id="p-12m">—</div></div>
+              <div class="rs"><div class="rs-label">Salary Range</div><div class="rs-val" id="salary-range">—</div></div>
+            </div>
+          </div>
+
+          <div class="drivers">
+            <div class="drivers-label">Top Risk Drivers</div>
+            <div class="drivers-row" id="drivers-row"></div>
+          </div>
+
+          <div class="curve-card">
+            <div class="curve-head">
+              <div>
+                <div class="curve-eyebrow" id="curve-eyebrow">DEEPHIT SURVIVAL · LEE ET AL. 2018</div>
+                <div class="curve-title">Probability of NOT being placed by month <em>t</em></div>
+              </div>
+              <div class="curve-meta" id="curve-meta">—</div>
+            </div>
+            <canvas id="survival-canvas" height="120"></canvas>
+          </div>
+        </section>
+
+        <!-- Right rail -->
+        <aside class="result-side">
+          <div class="card explain-card">
+            <div class="explain-eyebrow">AI RISK EXPLANATION</div>
+            <div class="explain-quote" id="explanation">—</div>
+          </div>
+
+          <div class="card actions-card">
+            <div class="actions-eyebrow">CO-PILOT ACTIONS</div>
+            <div class="actions-list" id="actions-list"></div>
+          </div>
+
+          <div class="card feed-card">
+            <div class="feed-eyebrow">LIVE SYSTEM FEED</div>
+            <ul class="feed-list" id="feed-list"></ul>
+          </div>
+        </aside>
+      </div>
+
       <!-- ==================== DECISION INTELLIGENCE SUMMARY ==================== -->
       <!-- Three-card "Status -> Comparison -> Improvement" narrative.
-           Renders ABOVE the full risk dashboard once a profile has been scored. -->
+           Renders BELOW the full risk dashboard once a profile has been scored. -->
       <section id="summary-panel" class="summary-panel hidden" aria-label="Decision intelligence summary">
         <div class="summary-head">
           <div>
@@ -310,92 +449,6 @@
 
         </div>
       </section>
-
-      <!-- Result panel (3-column dashboard mirroring slide 7) -->
-      <div id="result-panel" class="result-panel hidden">
-
-        <!-- Left rail -->
-        <aside class="rail">
-          <div class="rail-brand">CareerSight</div>
-          <ul class="rail-nav">
-            <li class="rail-active">Risk Dashboard</li>
-            <li>Portfolio View</li>
-            <li>PRI Index</li>
-            <li>Lender Settings</li>
-            <li>Audit Log</li>
-          </ul>
-          <div class="rail-card">
-            <div class="rail-avatar" id="result-avatar">PS</div>
-            <div class="rail-name" id="result-name">—</div>
-            <div class="rail-meta" id="result-meta">—</div>
-          </div>
-        </aside>
-
-        <!-- Center: risk score + survival curve -->
-        <section class="result-main">
-          <div class="result-head">
-            <div>
-              <div class="result-eyebrow">PLACEMENT RISK SCORE</div>
-              <div class="result-tierbar"><span></span><span></span><span></span></div>
-            </div>
-            <div class="result-tier-pill" id="result-tier">—</div>
-            <div class="result-crc">
-              <div class="result-crc-label">CRC FNR ≤</div>
-              <div class="result-crc-val">10%</div>
-            </div>
-          </div>
-
-          <div class="risk-grid">
-            <div class="risk-circle-wrap">
-              <svg viewBox="0 0 120 120" class="risk-circle">
-                <circle cx="60" cy="60" r="52" class="risk-circle-track"></circle>
-                <circle cx="60" cy="60" r="52" class="risk-circle-bar" id="risk-bar"></circle>
-              </svg>
-              <div class="risk-circle-num" id="risk-num">—</div>
-            </div>
-            <div class="risk-stats">
-              <div class="rs"><div class="rs-label">Placement @ 3mo</div><div class="rs-val" id="p-3m">—</div></div>
-              <div class="rs"><div class="rs-label">Placement @ 6mo</div><div class="rs-val" id="p-6m">—</div></div>
-              <div class="rs"><div class="rs-label">Placement @ 12mo</div><div class="rs-val" id="p-12m">—</div></div>
-              <div class="rs"><div class="rs-label">Salary Range</div><div class="rs-val" id="salary-range">—</div></div>
-            </div>
-          </div>
-
-          <div class="drivers">
-            <div class="drivers-label">Top Risk Drivers</div>
-            <div class="drivers-row" id="drivers-row"></div>
-          </div>
-
-          <div class="curve-card">
-            <div class="curve-head">
-              <div>
-                <div class="curve-eyebrow" id="curve-eyebrow">DEEPHIT SURVIVAL · LEE ET AL. 2018</div>
-                <div class="curve-title">Probability of NOT being placed by month <em>t</em></div>
-              </div>
-              <div class="curve-meta" id="curve-meta">—</div>
-            </div>
-            <canvas id="survival-canvas" height="120"></canvas>
-          </div>
-        </section>
-
-        <!-- Right rail -->
-        <aside class="result-side">
-          <div class="card explain-card">
-            <div class="explain-eyebrow">AI RISK EXPLANATION</div>
-            <div class="explain-quote" id="explanation">—</div>
-          </div>
-
-          <div class="card actions-card">
-            <div class="actions-eyebrow">CO-PILOT ACTIONS</div>
-            <div class="actions-list" id="actions-list"></div>
-          </div>
-
-          <div class="card feed-card">
-            <div class="feed-eyebrow">LIVE SYSTEM FEED</div>
-            <ul class="feed-list" id="feed-list"></ul>
-          </div>
-        </aside>
-      </div>
 
       <div class="card empty-state" id="empty-state">
         <div class="empty-emoji">📄</div>
@@ -744,6 +797,6 @@
     </div>
   </footer>
 
-  <script src="/static/app.js?v=21"></script>
+  <script src="/static/app.js?v=22"></script>
 </body>
 </html>

@@ -34,19 +34,33 @@ async function api(path, opts = {}) {
 
 
 // ----------- tabs -----------
+// Centralised tab switcher — used by the top nav AND the in-result rail nav.
+// Keeps tab-active class + lazy-loads heavy tabs on first visit.
+function switchToTab(target) {
+  if (!target) return;
+  $$(".nav-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === target));
+  $$(".tab").forEach(s => {
+    s.classList.toggle("tab-active", s.id === `tab-${target}`);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (target === "portfolio" && !portfolioLoaded) loadPortfolio();
+  if (target === "pri"       && !priLoaded)       loadPri();
+  if (target === "arch"      && !archLoaded)      renderArchitecture();
+}
+
 function setupTabs() {
   $$(".nav-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      const target = tab.dataset.tab;
-      $$(".nav-tab").forEach(t => t.classList.toggle("active", t === tab));
-      $$(".tab").forEach(s => {
-        s.classList.toggle("tab-active", s.id === `tab-${target}`);
-      });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      if (target === "portfolio" && !portfolioLoaded) loadPortfolio();
-      if (target === "pri"       && !priLoaded)       loadPri();
-      if (target === "arch"      && !archLoaded)      renderArchitecture();
-    });
+    tab.addEventListener("click", () => switchToTab(tab.dataset.tab));
+  });
+
+  // Rail-nav links inside the result panel — clicking jumps to the
+  // corresponding top-level tab. This makes "Portfolio View / PRI Index /
+  // Architecture" actionable instead of being decorative dead labels.
+  document.addEventListener("click", (e) => {
+    const li = e.target.closest("[data-go-tab]");
+    if (!li) return;
+    const target = li.dataset.goTab;
+    if (target && target !== "demo") switchToTab(target);
   });
 }
 
@@ -559,6 +573,24 @@ function renderResult(r) {
   $("#p-12m").textContent = fmtPct(pp.p_12m);
   $("#salary-range").textContent = `${fmtRs(sb.low)} – ${fmtRs(sb.high)}`;
 
+  // Rail "Decision snapshot" — populate with derived numbers so the rail
+  // shows live, profile-specific values instead of static placeholders.
+  const railBand = $("#rail-risk-band");
+  if (railBand) {
+    railBand.textContent = risk.tier || "—";
+    railBand.className = `rail-stat-val t-${(risk.tier || "").toLowerCase()}`;
+  }
+  const railP6 = $("#rail-p6m");
+  if (railP6) railP6.textContent = fmtPct(pp.p_6m);
+  const railPct = $("#rail-cohort-pct");
+  if (railPct) {
+    const peer = r.peer_benchmark || {};
+    const speedPct = peer.speed_percentile;
+    const salPct   = peer.salary_percentile;
+    const best = (speedPct != null) ? speedPct : salPct;
+    railPct.textContent = (best != null) ? `${Math.round(best)}th` : "—";
+  }
+
   // Drivers
   const driversRow = $("#drivers-row");
   driversRow.innerHTML = "";
@@ -648,16 +680,17 @@ function renderResult(r) {
   maybeShowProfileGaps(r);
 
   // Auto-scroll: if the gaps card is showing (CGPA / institute missing),
-  // land on it so the warning is immediately visible.  Otherwise prefer
-  // the summary panel; fall back to the result panel.
+  // land on it so the warning is immediately visible. Otherwise prefer
+  // the result panel (placement risk score is the headline metric and
+  // now renders first in the DOM); summary panel sits below as a follow-up.
   const gapsCard    = $("#profile-gaps");
-  const summaryPanel = $("#summary-panel");
+  const resultPanel = $("#result-panel");
   if (gapsCard && !gapsCard.classList.contains("hidden")) {
     scrollToAnalysis("#profile-gaps");
-  } else if (summaryPanel && !summaryPanel.classList.contains("hidden")) {
-    scrollToAnalysis("#summary-panel");
-  } else {
+  } else if (resultPanel && !resultPanel.classList.contains("hidden")) {
     scrollToAnalysis("#result-panel");
+  } else {
+    scrollToAnalysis("#summary-panel");
   }
 }
 

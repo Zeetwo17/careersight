@@ -25,3 +25,10 @@ Thumbs.db
 
 # Tool output
 .claude/launch.json
+
+# Slide drafts — local only
+slides/
+slides_v2/
+slides_v3/
+CareerSight_PitchDeck.html
+
