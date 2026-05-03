@@ -114,6 +114,36 @@ app.add_middleware(
 )
 
 
+@app.get("/api/debug")
+def debug_info() -> dict:
+    """Temporary debug endpoint — shows bundle file status and import checks."""
+    from pathlib import Path
+    import traceback as _tb
+    bundle_path = Path(__file__).resolve().parents[2] / "data" / "models" / "bundle.joblib"
+    info: dict = {
+        "bundle_path": str(bundle_path),
+        "bundle_exists": bundle_path.exists(),
+        "bundle_size_bytes": bundle_path.stat().st_size if bundle_path.exists() else None,
+    }
+    # Check if it's an LFS pointer (they're small text files ~130 bytes)
+    if bundle_path.exists() and bundle_path.stat().st_size < 500:
+        info["bundle_content_preview"] = bundle_path.read_text(errors="replace")[:200]
+        info["likely_lfs_pointer"] = True
+    else:
+        info["likely_lfs_pointer"] = False
+    # Try loading
+    try:
+        import joblib
+        b = joblib.load(bundle_path)
+        info["bundle_keys"] = list(b.keys())[:20]
+        info["load_ok"] = True
+    except Exception as exc:
+        info["load_ok"] = False
+        info["load_error"] = str(exc)
+        info["load_traceback"] = _tb.format_exc()
+    return info
+
+
 class ProfileBody(BaseModel):
     name: str = "Anonymous"
     course_type: str = Field(default="BTech-CS")
@@ -306,23 +336,27 @@ def llm_health(probe: bool = False) -> dict:
 
 @app.get("/api/health")
 def health() -> dict:
-    from .ipr import stats as ipr_stats
-    from .predict import _bundle
-    b = _bundle()
-    return {
-        "status": "ok",
-        "model_aucs": b["aucs"],
-        "salary_mae_lpa": b["salary_mae"],
-        "n_train": b["n_train"],
-        "course_types": COURSE_TYPES,
-        "calibration": b.get("calibration_reports"),
-        "survival": {
-            "method": "deephit" if b.get("deephit") else "interpolated",
-            "c_index": b.get("deephit", {}).get("c_index"),
-            "cuts": b.get("deephit", {}).get("cuts"),
-        },
-        "ipr": ipr_stats(),
-    }
+    import traceback as _tb
+    try:
+        from .ipr import stats as ipr_stats
+        from .predict import _bundle
+        b = _bundle()
+        return {
+            "status": "ok",
+            "model_aucs": b["aucs"],
+            "salary_mae_lpa": b["salary_mae"],
+            "n_train": b["n_train"],
+            "course_types": COURSE_TYPES,
+            "calibration": b.get("calibration_reports"),
+            "survival": {
+                "method": "deephit" if b.get("deephit") else "interpolated",
+                "c_index": b.get("deephit", {}).get("c_index"),
+                "cuts": b.get("deephit", {}).get("cuts"),
+            },
+            "ipr": ipr_stats(),
+        }
+    except Exception as exc:
+        return {"status": "error", "error": str(exc), "traceback": _tb.format_exc()}
 
 
 @app.get("/api/ipr_stats")
