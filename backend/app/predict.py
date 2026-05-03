@@ -88,6 +88,9 @@ def _bundle():
                 "Run: python -m backend.app.train"
             )
         _BUNDLE = joblib.load(_BUNDLE_PATH)
+        # Drop the SHAP explainer — we use perturbation importance now.
+        # Frees ~50 MB of RAM on the 512 MB free tier.
+        _BUNDLE.pop("explainer", None)
     return _BUNDLE
 
 

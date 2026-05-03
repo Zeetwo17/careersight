@@ -5,13 +5,12 @@ python-multipart>=0.0.7
 pydantic>=2.5
 python-dotenv>=1.0
 
-# ── Data / ML ─────────────────────────────────────────────────────────────────
+# ── Data / ML (inference only) ───────────────────────────────────────────────
 pandas>=2.0
 numpy>=1.26
 scipy>=1.10
 scikit-learn>=1.3
 lightgbm>=4.0
-shap>=0.44
 joblib>=1.3
 
 # ── PDF parsing ───────────────────────────────────────────────────────────────
@@ -20,17 +19,17 @@ pdfplumber>=0.10
 # ── LLM (OpenRouter via OpenAI-compatible client) ────────────────────────────
 openai>=1.0
 
-# ── Calibration, conformal risk, fairness, causal, federated, distillation ───
+# ── Inference support ────────────────────────────────────────────────────────
 netcal>=1.4
-mapie>=1.4
-fairlearn>=0.10
-causal-learn>=0.1
 rapidfuzz>=3.0
-econml>=0.16
-dowhy>=0.11
 
-# ── DeepHit survival (optional — app degrades gracefully to interpolated curves)
-# Uncomment only on a paid Render tier (needs >1 GB RAM):
-# torch>=2.0
+# ── Training-only (NOT needed on Render free tier) ───────────────────────────
+# shap>=0.44          ← replaced by perturbation importance at inference
+# mapie>=1.4          ← CRC fitted at training time, result stored in bundle
+# fairlearn>=0.10     ← fairness audit is training-time only
+# causal-learn>=0.1   ← PC algorithm is training-time only
+# econml>=0.16        ← CATE estimation is training-time only
+# dowhy>=0.11         ← causal graph is training-time only
+# torch>=2.0          ← DeepHit survival, app degrades to interpolated curves
 # torchtuples>=0.2
 # pycox>=0.2

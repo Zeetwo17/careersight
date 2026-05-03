@@ -27,11 +27,13 @@ warnings.filterwarnings("ignore")
 # OpenMP duplicate-lib workaround — Anaconda + LightGBM both ship libomp.
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
-# torch is required by netcal at IMPORT time (its top-level Beta calibration
-# class definition imports torch). On some Windows environments torch fails
-# at DLL load. We only need torch for *training*, never for inference on
-# already-fitted Beta calibrators. If torch can't be imported, install a stub
-# so netcal — and therefore the bundle.joblib — can unpickle.
+# ---------------------------------------------------------------------------
+# Lightweight stubs for packages the bundle.joblib needs to unpickle but
+# that are NOT required at inference time.  Without these stubs, joblib.load
+# would fail with ModuleNotFoundError for shap / torch / pycox.
+# ---------------------------------------------------------------------------
+
+# torch — required by netcal at IMPORT time (Beta calibrator class def).
 try:
     import torch  # noqa: F401
 except (ImportError, OSError):
@@ -45,9 +47,36 @@ except (ImportError, OSError):
     _stub.nn = _nn
     sys.modules["torch"] = _stub
     sys.modules["torch.nn"] = _nn
-    # pycox / torchtuples follow the same fate but they're only needed for
-    # the DeepHit survival path — predict.py degrades to interpolated curves.
     for _m in ("torchtuples", "pycox", "pycox.models"):
+        sys.modules.setdefault(_m, types.ModuleType(_m))
+
+# shap — the bundle contains a shap.TreeExplainer but we use perturbation-
+# based importance at inference.  We only need a hollow class so joblib can
+# unpickle the object; we never call any method on it.
+try:
+    import shap  # noqa: F401
+except ImportError:
+    _shap = types.ModuleType("shap")
+    _shap_ex = types.ModuleType("shap.explainers")
+    _shap_tree = types.ModuleType("shap.explainers._tree")
+
+    class _DummyExplainer:
+        """Accepts any pickle state — we never call methods on it."""
+        def __init__(self, *a, **kw): pass
+        def __setstate__(self, state):
+            if isinstance(state, dict):
+                self.__dict__.update(state)
+
+    _shap.TreeExplainer = _DummyExplainer
+    _shap.Explainer = _DummyExplainer
+    _shap_ex.TreeExplainer = _DummyExplainer
+    _shap_tree.TreeExplainer = _DummyExplainer
+
+    sys.modules["shap"] = _shap
+    sys.modules["shap.explainers"] = _shap_ex
+    sys.modules["shap.explainers._tree"] = _shap_tree
+    # shap imports matplotlib; stub that path too if matplotlib is missing
+    for _m in ("shap.plots", "shap.maskers", "shap.utils"):
         sys.modules.setdefault(_m, types.ModuleType(_m))
 
 # Load .env from the project root so GEMINI_API_KEY (and any other secrets)
