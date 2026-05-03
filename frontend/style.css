@@ -2897,22 +2897,26 @@ body {
 .nav-tab:hover::after,
 .nav-tab.active::after { transform: scaleX(1); }
 
-/* Risk circle number — count-up shine */
-.risk-circle-num {
-  position: relative;
-}
-.risk-circle-num::after {
+/* Risk circle radial glow.
+   IMPORTANT: leave .risk-circle-num's positioning alone — the original
+   rule (line ~779) uses `position: absolute; inset: 0;` to centre the
+   number inside the SVG circle. Putting the glow on .risk-circle-wrap
+   (which is already position:relative) keeps the number perfectly centred
+   while still adding the ambient orange ring behind the SVG. */
+.risk-circle-wrap::before {
   content: "";
   position: absolute;
-  inset: -8px;
+  inset: 14px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(241,90,41,0.25) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(241,90,41,0.18) 0%, transparent 65%);
   opacity: 0;
   animation: riskNumGlow 2.8s ease-in-out 0.6s infinite;
   pointer-events: none;
+  z-index: 0;
 }
+.risk-circle, .risk-circle-num { z-index: 1; }
 @keyframes riskNumGlow {
-  0%, 100% { opacity: 0; transform: scale(0.8); }
+  0%, 100% { opacity: 0; transform: scale(0.85); }
   50%      { opacity: 1; transform: scale(1); }
 }
 
