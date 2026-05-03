@@ -3,7 +3,7 @@ services:
     name: careersight
     runtime: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
+    buildCommand: pip install -r backend/requirements.txt && python -c "import matplotlib; matplotlib.get_cachedir(); import matplotlib.pyplot"
     startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: OPENROUTER_API_KEY
@@ -12,3 +12,7 @@ services:
         value: openai/gpt-oss-120b:free
       - key: KMP_DUPLICATE_LIB_OK
         value: "TRUE"
+      - key: MPLBACKEND
+        value: "Agg"
+      - key: MPLCONFIGDIR
+        value: "/tmp/matplotlib"

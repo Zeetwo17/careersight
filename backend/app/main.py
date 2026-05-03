@@ -79,30 +79,6 @@ app = FastAPI(
 )
 
 
-def _warm_bundle():
-    """Load bundle + run one dummy SHAP call so the TreeExplainer is
-    JIT-warmed before the first real user request."""
-    import numpy as _np
-    from .predict import _bundle
-    try:
-        b = _bundle()
-        n_feats = len(b["feature_names"])
-        dummy = _np.zeros((1, n_feats), dtype=_np.float64)
-        b["explainer"].shap_values(dummy, approximate=True, check_additivity=False)
-    except Exception:
-        pass
-
-
-@app.on_event("startup")
-async def _preload_bundle():
-    """Eagerly load the model bundle and pre-warm SHAP at server startup
-    so the first user request pays no cold-start cost."""
-    import asyncio as _asyncio
-    loop = _asyncio.get_event_loop()
-    try:
-        await loop.run_in_executor(None, _warm_bundle)
-    except Exception:
-        pass  # FileNotFoundError surfaced properly on first /api/health call
 
 
 app.add_middleware(
