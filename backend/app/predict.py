@@ -127,14 +127,26 @@ def _shap_top_drivers(vec: np.ndarray, top_k: int = 5) -> list[dict]:
 
     SHAP returns contributions toward placed_6m=1 (positive). We invert sign
     so positive driver values mean "increases placement risk."
+
+    Uses LightGBM's native C++ SHAP (pred_contrib) instead of the shap library
+    to avoid Python-wrapper overhead on single-sample inference.
     """
     bundle = _bundle()
-    explainer = bundle["explainer"]
     feat_names = bundle["feature_names"]
-    sv = explainer.shap_values(vec.reshape(1, -1))
-    if isinstance(sv, list):
-        sv = sv[1] if len(sv) == 2 else sv[0]
-    sv = np.asarray(sv).reshape(-1)
+    try:
+        # LightGBM native SHAP — pure C++, 10-20x faster than shap library
+        # pred_contrib returns shape (1, n_features + 1); last col is bias/intercept.
+        contrib = bundle["classifiers"]["placed_6m"].booster_.predict(
+            vec.reshape(1, -1), pred_contrib=True
+        )
+        sv = np.asarray(contrib[0, :-1])   # drop the bias term
+    except Exception:
+        # Fallback: shap library (slower but always works)
+        explainer = bundle["explainer"]
+        sv_raw = explainer.shap_values(vec.reshape(1, -1), check_additivity=False)
+        if isinstance(sv_raw, list):
+            sv_raw = sv_raw[1] if len(sv_raw) == 2 else sv_raw[0]
+        sv = np.asarray(sv_raw).reshape(-1)
 
     meta = feature_metadata()
     pairs = []

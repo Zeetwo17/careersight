@@ -79,15 +79,28 @@ app = FastAPI(
 )
 
 
+def _warm_bundle():
+    """Load bundle + run one dummy SHAP call so LightGBM's native SHAP
+    C++ code is JIT-warmed before the first real user request."""
+    import numpy as _np
+    from .predict import _bundle
+    try:
+        b = _bundle()
+        n_feats = len(b["feature_names"])
+        dummy = _np.zeros((1, n_feats), dtype=_np.float64)
+        b["classifiers"]["placed_6m"].booster_.predict(dummy, pred_contrib=True)
+    except Exception:
+        pass
+
+
 @app.on_event("startup")
 async def _preload_bundle():
-    """Eagerly load the model bundle at server startup so the first user
-    request doesn't pay the joblib.load() cost (~1-2s)."""
+    """Eagerly load the model bundle and pre-warm SHAP at server startup
+    so the first user request pays no cold-start cost."""
     import asyncio as _asyncio
-    from .predict import _bundle
     loop = _asyncio.get_event_loop()
     try:
-        await loop.run_in_executor(None, _bundle)
+        await loop.run_in_executor(None, _warm_bundle)
     except Exception:
         pass  # FileNotFoundError surfaced properly on first /api/health call
 
