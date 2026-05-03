@@ -139,6 +139,9 @@ def debug_info() -> dict:
         "bundle_path": str(bundle_path),
         "bundle_exists": bundle_path.exists(),
         "bundle_size_bytes": bundle_path.stat().st_size if bundle_path.exists() else None,
+        "numba_in_sys_modules": "numba" in sys.modules,
+        "shap_in_sys_modules": "shap" in sys.modules,
+        "deploy_version": "v2_numba_stub",
     }
     # Check if it's an LFS pointer (they're small text files ~130 bytes)
     if bundle_path.exists() and bundle_path.stat().st_size < 500:
