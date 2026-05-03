@@ -87,33 +87,51 @@ except ImportError:
         _mod.__package__ = _m
         sys.modules[_m] = _mod
 
-# numba — SHAP's TreeExplainer pickle references numba types.
-# We never call SHAP at inference so a catch-all stub is sufficient.
-# The stub must have __path__ (list) so Python's import machinery can
-# traverse submodules without blowing up on 'type' object is not iterable.
+# numba — SHAP's TreeExplainer pickle references many numba submodules.
+# We never call SHAP at inference so a dynamic meta-path finder intercepts
+# ALL numba.* imports and returns a harmless stub module.
 try:
     import numba  # noqa: F401
 except ImportError:
-    class _NumbaModule(types.ModuleType):
-        __path__ = []   # package marker — prevents import machinery TypeError
+    import importlib.abc
+    import importlib.machinery
+
+    class _StubModule(types.ModuleType):
+        __path__ = []
         __spec__ = None
         __loader__ = None
-        __package__ = "numba"
-
         def __getattr__(self, name):
             if name in ("__path__", "__spec__", "__loader__", "__package__",
-                        "__name__", "__file__"):
+                        "__name__", "__file__", "__all__"):
                 return super().__getattribute__(name)
             return _Hollow
 
-    for _m in ("numba", "numba.core", "numba.core.types",
-               "numba.core.types.containers", "numba.np",
-               "numba.np.ufunc", "numba.typed", "numba.typed.typeddict",
-               "numba.typed.typedlist"):
-        _mod = _NumbaModule(_m)
-        _mod.__path__ = []
-        _mod.__package__ = _m
-        sys.modules[_m] = _mod
+    class _NumbaFinder(importlib.abc.MetaPathFinder):
+        """Intercepts any 'numba' or 'numba.*' import."""
+        _PREFIXES = ("numba",)
+
+        def find_module(self, fullname, path=None):
+            if fullname == "numba" or fullname.startswith("numba."):
+                return self
+            return None
+
+        def load_module(self, fullname):
+            if fullname in sys.modules:
+                return sys.modules[fullname]
+            mod = _StubModule(fullname)
+            mod.__path__ = []
+            mod.__package__ = fullname
+            mod.__loader__ = self
+            sys.modules[fullname] = mod
+            return mod
+
+    # Install the finder at the front of sys.meta_path
+    sys.meta_path.insert(0, _NumbaFinder())
+    # Pre-register the root so pickle.find_class can resolve immediately
+    _root = _StubModule("numba")
+    _root.__path__ = []
+    _root.__package__ = "numba"
+    sys.modules["numba"] = _root
 
 # Load .env from the project root so GEMINI_API_KEY (and any other secrets)
 # are available in os.environ before any module imports them.
@@ -164,7 +182,7 @@ def debug_info() -> dict:
         "bundle_size_bytes": bundle_path.stat().st_size if bundle_path.exists() else None,
         "numba_in_sys_modules": "numba" in sys.modules,
         "shap_in_sys_modules": "shap" in sys.modules,
-        "deploy_version": "v2_numba_stub",
+        "deploy_version": "v3_numba_metapath",
     }
     # Check if it's an LFS pointer (they're small text files ~130 bytes)
     if bundle_path.exists() and bundle_path.stat().st_size < 500:
