@@ -16,3 +16,7 @@ services:
         value: "Agg"
       - key: MPLCONFIGDIR
         value: "/tmp/matplotlib"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"

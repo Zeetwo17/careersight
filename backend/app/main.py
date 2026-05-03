@@ -79,6 +79,22 @@ app = FastAPI(
 )
 
 
+@app.on_event("startup")
+async def _preload_bundle():
+    """Fire-and-forget bundle loading.  The startup handler returns
+    immediately so uvicorn binds the port (Render sees it as healthy).
+    The bundle loads in a background task concurrently."""
+    import asyncio as _aio
+    from .predict import _bundle
+
+    async def _bg():
+        loop = _aio.get_event_loop()
+        try:
+            await loop.run_in_executor(None, _bundle)
+        except Exception:
+            pass  # first /api/health call will surface this
+
+    _aio.create_task(_bg())
 
 
 app.add_middleware(
