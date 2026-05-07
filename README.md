@@ -10,7 +10,10 @@ app_port: 7860
 # CareerSight
 
 **AI · Education Loan Risk Intelligence**
-Team Aurdinary · IIIT Allahabad · Hridyesh · Harsh
+Team Aurdinary · IIIT Allahabad · Hridyesh Pandey &amp; Harsh Markam
+
+> 🔴 **Live demo:** **[pandey-jee-careersight.hf.space](https://pandey-jee-careersight.hf.space/)**
+> Drop a resume PDF or pick a persona — full risk surface (placement timeline · salary band · 13-month survival curve · top drivers · Co-Pilot actions) returns in ~56 ms warm.
 
 CareerSight links education loans to career outcomes — predicting placement
 timelines, salary ranges, and delayed-repayment risk so lenders can intervene
@@ -155,12 +158,18 @@ show real-label AUC + ECE instead of the covariate-shift fallback.
 | Endpoint                                | Method | Purpose                                                  |
 | --------------------------------------- | ------ | -------------------------------------------------------- |
 | `/api/health`                           | GET    | Model AUCs, ECE, salary MAE, DeepHit C-index             |
+| `/api/llm_health`                       | GET    | Resume-parser LLM provider status (probe optional)       |
 | `/api/demo_profile/{key}`               | GET    | Score Priya / Arjun / Meera / Rahul                      |
 | `/api/predict`                          | POST   | Score arbitrary `ProfileBody` JSON                       |
 | `/api/score_from_resume`                | POST   | Multipart PDF → full risk surface                        |
+| `/api/score_from_resume_stream`         | POST   | SSE stream of forensic-discovery events while scoring    |
 | `/api/score_from_text`                  | POST   | Pasted resume text → full risk surface                   |
+| `/api/score_from_text_stream`           | POST   | SSE stream variant of `/score_from_text`                 |
+| `/api/whatif`                           | POST   | Counterfactual delta from toggled Co-Pilot interventions |
+| `/api/whatif_catalog`                   | GET    | Available what-if interventions per cohort               |
 | `/api/portfolio?limit=&risk_tier=`      | GET    | 200-borrower book                                        |
 | `/api/pri`                              | GET    | Naukri-JobSpeak-anchored 13-month PRI                    |
+| `/api/ipr_stats`                        | GET    | Institute Placement Registry coverage stats              |
 | `/api/record_outcome`                   | POST   | Update Beta(α, β) bandit posterior                       |
 | `/api/bandit_state`                     | GET    | Bandit posteriors per (segment × action)                 |
 | `/api/causal`                           | GET    | PC-discovered CPDAG + Markov blanket                     |
@@ -171,7 +180,8 @@ show real-label AUC + ECE instead of the covariate-shift fallback.
 | `/api/drift`                            | GET    | PSI + KS                                                 |
 | `/api/ood`                              | GET    | OOD validation reports                                   |
 
-OpenAPI docs auto-generated at <http://127.0.0.1:8000/docs>.
+OpenAPI docs auto-generated at <http://127.0.0.1:8000/docs> locally,
+or <https://pandey-jee-careersight.hf.space/docs> on the live deployment.
 
 ---
 
