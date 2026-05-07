@@ -23,8 +23,8 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Tool output
-.claude/launch.json
+# Local tool config
+.claude/
 
 # Slide drafts — local only
 slides/
